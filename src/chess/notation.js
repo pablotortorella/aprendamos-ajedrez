@@ -3,7 +3,7 @@
    Usa las letras españolas (C, A, T, D, R), que son las que se comparten por
    escrito. Funciones puras: dependen sólo del tablero que reciben. */
 
-import { FILES, algebraic, generateMoves, isWhite, pieceType } from "./engine.js";
+import { FILES, algebraic, generateLegalMoves, generateMoves, isWhite, pieceType } from "./engine.js";
 
 /** Única fuente de verdad de las letras. PIECE_INFO las toma de acá. */
 export const PIECE_LETTERS = {
@@ -72,27 +72,30 @@ export function disambiguation(board, fromRow, fromCol, toRow, toCol) {
  * @param {number} toRow         Fila de destino.
  * @param {number} toCol         Columna de destino.
  * @param {object} [opciones]
- * @param {boolean} [opciones.capture]   Si la jugada come una pieza.
- * @param {boolean} [opciones.promoted]  Si un peón corona (siempre a Dama).
- * @returns {string} Por ejemplo: "e4", "Cbd2", "Axf6", "exd5", "e8=D".
+ * @param {boolean} [opciones.capture]    Si la jugada come una pieza.
+ * @param {boolean} [opciones.promoted]   Si un peón corona (siempre a Dama).
+ * @param {boolean} [opciones.check]      Si deja al rey rival en jaque.
+ * @param {boolean} [opciones.checkmate]  Si lo deja en jaque mate (implica check).
+ * @returns {string} Por ejemplo: "e4", "Cbd2", "Axf6", "exd5", "e8=D", "Dh5+", "Dh7#".
  */
 export function moveNotation(board, fromRow, fromCol, toRow, toCol, opciones = {}) {
-  const { capture = false, promoted = false } = opciones;
+  const { capture = false, promoted = false, check = false, checkmate = false } = opciones;
   const piece = board[fromRow][fromCol];
   if (!piece) return "";
 
   const type = pieceType(piece);
   const dest = algebraic(toRow, toCol);
+  const sufijoJaque = checkmate ? "#" : check ? "+" : "";
 
   if (type === "P") {
     let n = capture ? `${FILES[fromCol]}x${dest}` : dest;
     if (promoted) n += "=D";
-    return n;
+    return n + sufijoJaque;
   }
 
   const letra = PIECE_LETTERS[type];
   const desambigua = disambiguation(board, fromRow, fromCol, toRow, toCol);
-  return `${letra}${desambigua}${capture ? "x" : ""}${dest}`;
+  return `${letra}${desambigua}${capture ? "x" : ""}${dest}${sufijoJaque}`;
 }
 
 /** Inverso de PIECE_LETTERS, para leer una jugada en vez de escribirla. */
@@ -148,9 +151,8 @@ export function parseMove(token) {
  * devuelve sus coordenadas de origen y destino, o null si ninguna pieza propia
  * puede hacer esa jugada ahí (texto inválido, o jugada ilegal en esa posición).
  *
- * Usa los mismos movimientos pseudo-legales que el resto de la app: una carta
- * que pegue una jugada que sólo es "ilegal" por dejar el rey en jaque hoy se
- * acepta igual, igual que al jugar a mano (ver nota en generateMoves).
+ * Usa movimientos LEGALES (no deja al propio rey en jaque): una carta pegada
+ * respeta las mismas reglas que jugar a mano.
  */
 export function resolveMove(board, turn, parsed) {
   if (!parsed) return null;
@@ -165,7 +167,7 @@ export function resolveMove(board, turn, parsed) {
     for (let c = 0; c < 8; c++) {
       const piece = board[r][c];
       if (!piece || pieceType(piece) !== type || isWhite(piece) !== white) continue;
-      const move = generateMoves(board, r, c).find((m) => m.row === destRow && m.col === destCol);
+      const move = generateLegalMoves(board, r, c).find((m) => m.row === destRow && m.col === destCol);
       if (!move || move.capture !== capture) continue;
       if (disambig.length === 2 && algebraic(r, c) !== disambig) continue;
       if (disambig.length === 1 && /[a-h]/.test(disambig) && FILES[c] !== disambig) continue;

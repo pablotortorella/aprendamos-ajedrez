@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { applyMove, createEmptyBoard, createInitialBoard, generateMoves, FILES } from "./engine.js";
+import {
+  applyMove,
+  createEmptyBoard,
+  createInitialBoard,
+  findKing,
+  generateLegalMoves,
+  generateMoves,
+  hasAnyLegalMoves,
+  isInCheck,
+  isSquareAttacked,
+  FILES,
+} from "./engine.js";
 
 /** Arma un tablero desde coordenadas de ajedrez: boardFrom({ e4: "P", d5: "p" }). */
 export function boardFrom(piezas) {
@@ -148,5 +159,91 @@ describe("applyMove", () => {
   it("un peón que no llega a la última fila no corona", () => {
     const { promoted } = applyMove(boardFrom({ e2: "P" }), at("e2").row, at("e2").col, at("e4").row, at("e4").col);
     expect(promoted).toBe(false);
+  });
+});
+
+describe("findKing", () => {
+  it("encuentra el rey del color pedido", () => {
+    const board = boardFrom({ e1: "K", e8: "k" });
+    expect(findKing(board, true)).toEqual(at("e1"));
+    expect(findKing(board, false)).toEqual(at("e8"));
+  });
+
+  it("sin rey en el tablero, devuelve null en vez de romper", () => {
+    expect(findKing(boardFrom({}), true)).toBeNull();
+  });
+});
+
+describe("isSquareAttacked", () => {
+  it("una torre ataca a lo largo de toda su fila y columna", () => {
+    const board = boardFrom({ a1: "R" });
+    expect(isSquareAttacked(board, at("a8").row, at("a8").col, true)).toBe(true);
+    expect(isSquareAttacked(board, at("h1").row, at("h1").col, true)).toBe(true);
+    expect(isSquareAttacked(board, at("b2").row, at("b2").col, true)).toBe(false);
+  });
+
+  it("una pieza no ataca a través de otra que le bloquea el paso", () => {
+    const board = boardFrom({ a1: "R", a4: "P" });
+    expect(isSquareAttacked(board, at("a8").row, at("a8").col, true)).toBe(false);
+    expect(isSquareAttacked(board, at("a3").row, at("a3").col, true)).toBe(true);
+  });
+
+  it("un peón ataca en diagonal, incluso si la casilla está vacía", () => {
+    const board = boardFrom({ e4: "P" });
+    expect(isSquareAttacked(board, at("d5").row, at("d5").col, true)).toBe(true);
+    expect(isSquareAttacked(board, at("f5").row, at("f5").col, true)).toBe(true);
+    // Un peón NO ataca derecho adelante: ahí sólo puede avanzar, no comer.
+    expect(isSquareAttacked(board, at("e5").row, at("e5").col, true)).toBe(false);
+  });
+});
+
+describe("isInCheck", () => {
+  it("el rey está en jaque si algo lo ataca", () => {
+    const board = boardFrom({ e1: "K", e8: "r" });
+    expect(isInCheck(board, true)).toBe(true);
+  });
+
+  it("el rey no está en jaque si nada lo ataca", () => {
+    const board = boardFrom({ e1: "K", a8: "r" });
+    expect(isInCheck(board, true)).toBe(false);
+  });
+
+  it("sin rey en el tablero no rompe (para tests que no lo necesitan)", () => {
+    expect(isInCheck(boardFrom({ e4: "P" }), true)).toBe(false);
+  });
+});
+
+describe("generateLegalMoves", () => {
+  it("una pieza clavada que no puede quedarse en la línea de la clavada no tiene jugadas", () => {
+    // El caballo en e2 tapa el jaque de la torre negra al rey blanco. Cualquier
+    // salto lo saca de la columna "e" (un caballo nunca se queda en la misma
+    // columna), así que ninguno de sus movimientos pseudo-legales es legal.
+    const board = boardFrom({ e1: "K", e2: "N", e8: "r" });
+    expect(generateLegalMoves(board, at("e2").row, at("e2").col)).toEqual([]);
+    // Sin la torre negra, el mismo caballo sí tiene jugadas.
+    expect(generateLegalMoves(boardFrom({ e1: "K", e2: "N" }), at("e2").row, at("e2").col).length).toBeGreaterThan(0);
+  });
+
+  it("en jaque, el rey sólo puede ir a casillas que no sigan atacadas", () => {
+    const board = boardFrom({ e1: "K", e8: "r" });
+    const destinos = generateLegalMoves(board, at("e1").row, at("e1").col)
+      .map((m) => `${FILES[m.col]}${8 - m.row}`)
+      .sort();
+    // d1, d2, f1, f2 salen de la columna "e" atacada; e2 se queda en ella.
+    expect(destinos).toEqual(["d1", "d2", "f1", "f2"]);
+  });
+});
+
+describe("hasAnyLegalMoves", () => {
+  it("con jugadas legales disponibles, da true", () => {
+    expect(hasAnyLegalMoves(createInitialBoard(), true)).toBe(true);
+  });
+
+  it("mate del pasillo: en jaque y sin ninguna jugada legal, da false", () => {
+    // Rey blanco encerrado por sus propios peones, torre negra jaqueando por
+    // la fila 1 sin nada en el medio: ni el rey ni los peones pueden hacer nada.
+    const board = boardFrom({ g1: "K", f2: "P", g2: "P", h2: "P", a1: "r" });
+    expect(isInCheck(board, true)).toBe(true);
+    expect(hasAnyLegalMoves(board, true)).toBe(false);
   });
 });

@@ -7,8 +7,11 @@
    en mayúscula (P N B R Q K) y las negras en minúscula. Una casilla vacía es
    null.
 
-   Ojo: los movimientos son PSEUDO-LEGALES. No se verifica si la jugada deja al
-   rey propio en jaque. Es una limitación deliberada de esta etapa. */
+   generateMoves da movimientos PSEUDO-LEGALES: no mira si la jugada deja al
+   rey propio en jaque. generateLegalMoves sí lo filtra, y es lo que hay que
+   usar para jugar de verdad; generateMoves queda como su bloque de base y
+   para el nivel 3, que sólo quiere mostrar cómo se mueve una pieza sola en
+   un tablero vacío, sin noción de jaque. */
 
 export const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
 
@@ -144,4 +147,77 @@ export function generateMoves(board, row, col) {
   if (type === "R") return slide(board, row, col, white, ORTH);
   if (type === "Q") return slide(board, row, col, white, [...DIAG, ...ORTH]);
   return [];
+}
+
+/** Casillas que un peón amenaza, coma o no coma algo ahí: para detectar jaque. */
+function pawnAttackSquares(row, col, white) {
+  const nr = row + (white ? -1 : 1);
+  return [-1, 1]
+    .map((dc) => ({ row: nr, col: col + dc }))
+    .filter(({ row: r, col: c }) => r >= 0 && r < 8 && c >= 0 && c < 8);
+}
+
+/**
+ * ¿Alguna pieza de color `byWhite` ataca la casilla (row, col)? No importa si
+ * la casilla está ocupada o no. Se usa para saber si el rey está en jaque, y
+ * en el futuro podría servir también para el enroque (no soportado todavía).
+ */
+export function isSquareAttacked(board, row, col, byWhite) {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (!piece || isWhite(piece) !== byWhite) continue;
+      if (pieceType(piece) === "P") {
+        if (pawnAttackSquares(r, c, byWhite).some((s) => s.row === row && s.col === col)) return true;
+        continue;
+      }
+      if (generateMoves(board, r, c).some((m) => m.row === row && m.col === col)) return true;
+    }
+  }
+  return false;
+}
+
+/** Busca el rey de ese color. Devuelve null si no está (no debería pasar en una partida real). */
+export function findKing(board, white) {
+  const target = white ? "K" : "k";
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      if (board[r][c] === target) return { row: r, col: c };
+    }
+  }
+  return null;
+}
+
+/** ¿El rey de ese color está en jaque en esta posición? */
+export function isInCheck(board, white) {
+  const king = findKing(board, white);
+  if (!king) return false;
+  return isSquareAttacked(board, king.row, king.col, !white);
+}
+
+/**
+ * Los movimientos de generateMoves que además no dejan al propio rey en
+ * jaque: son los que de verdad se pueden jugar. Esto es lo que cierra el
+ * agujero de "comerse el rey": una jugada nunca deja al rey capturable,
+ * porque quien estaba en jaque tiene que resolverlo antes de mover otra cosa.
+ */
+export function generateLegalMoves(board, row, col) {
+  const piece = board[row][col];
+  if (!piece) return [];
+  const white = isWhite(piece);
+  return generateMoves(board, row, col).filter((m) => {
+    const { board: after } = applyMove(board, row, col, m.row, m.col);
+    return !isInCheck(after, white);
+  });
+}
+
+/** ¿Ese color tiene al menos una jugada legal? Si no, y está en jaque, es mate. */
+export function hasAnyLegalMoves(board, white) {
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (piece && isWhite(piece) === white && generateLegalMoves(board, r, c).length > 0) return true;
+    }
+  }
+  return false;
 }

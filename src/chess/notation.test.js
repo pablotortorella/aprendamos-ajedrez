@@ -43,6 +43,24 @@ describe("coronación", () => {
   });
 });
 
+describe("jaque y jaque mate", () => {
+  it("una jugada que deja en jaque termina en +", () => {
+    expect(escribir(boardFrom({ d1: "Q" }), "d1", "h5", { check: true })).toBe("Dh5+");
+  });
+
+  it("una jugada que deja en jaque mate termina en # y no en +", () => {
+    expect(escribir(boardFrom({ d1: "Q" }), "d1", "h7", { check: true, checkmate: true })).toBe("Dh7#");
+  });
+
+  it("también en las jugadas de peón", () => {
+    expect(escribir(boardFrom({ e2: "P" }), "e2", "e4", { check: true })).toBe("e4+");
+  });
+
+  it("sin jaque no agrega nada", () => {
+    expect(escribir(boardFrom({ d1: "Q" }), "d1", "h5")).toBe("Dh5");
+  });
+});
+
 describe("desambiguación (el bug que rompía las cartas)", () => {
   it("con un solo caballo no agrega nada", () => {
     expect(escribir(boardFrom({ b1: "N" }), "b1", "d2")).toBe("Cd2");
@@ -179,5 +197,12 @@ describe("resolveMove", () => {
 
   it("null de entrada (token inválido) no rompe", () => {
     expect(resolveMove(boardFrom({}), "w", null)).toBeNull();
+  });
+
+  it("no resuelve una jugada que deje al propio rey en jaque", () => {
+    // El caballo en e2 tapa el jaque de la torre negra al rey blanco: no se
+    // puede mover, aunque "Cd4" sea un salto pseudo-legal válido.
+    const board = boardFrom({ e1: "K", e2: "N", e8: "r" });
+    expect(resolver(board, "w", "Cd4")).toBeNull();
   });
 });
