@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LARGO_MAXIMO_NOMBRE, limpiarNombre, recortarMientrasEscribe, textoCarta } from "./carta.js";
+import { LARGO_MAXIMO_NOMBRE, extraerJugadas, limpiarNombre, recortarMientrasEscribe, textoCarta } from "./carta.js";
 
 const log = [
   { number: 1, white: "e4", black: "e5" },
@@ -79,5 +79,38 @@ describe("textoCarta", () => {
   it("sin jugadas no rompe", () => {
     expect(() => textoCarta([])).not.toThrow();
     expect(() => textoCarta(null)).not.toThrow();
+  });
+
+  it("textoCarta y extraerJugadas son inversas", () => {
+    const texto = textoCarta(log, { remitente: "Ana", destinataria: "Sofi" });
+    expect(extraerJugadas(texto)).toEqual(log);
+  });
+});
+
+describe("extraerJugadas", () => {
+  it("saca las jugadas de una carta entera, ignorando saludo y firma", () => {
+    const texto = textoCarta(log, { remitente: "Ana", destinataria: "Sofi" });
+    expect(extraerJugadas(texto)).toEqual(log);
+  });
+
+  it("también funciona si se pega sólo la lista de jugadas", () => {
+    expect(extraerJugadas("1. e4  e5\n2. Cf3")).toEqual([
+      { number: 1, white: "e4", black: "e5" },
+      { number: 2, white: "Cf3", black: null },
+    ]);
+  });
+
+  it("tolera espacios de más y líneas vacías entre jugadas", () => {
+    expect(extraerJugadas("1.   e4    e5\n\n2.Cf3")).toEqual([
+      { number: 1, white: "e4", black: "e5" },
+      { number: 2, white: "Cf3", black: null },
+    ]);
+  });
+
+  it("sin jugadas devuelve una lista vacía en vez de romper", () => {
+    expect(extraerJugadas("¡Hola! ¿Cómo estás?")).toEqual([]);
+    expect(extraerJugadas("")).toEqual([]);
+    expect(extraerJugadas(null)).toEqual([]);
+    expect(extraerJugadas(undefined)).toEqual([]);
   });
 });

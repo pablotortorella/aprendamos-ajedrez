@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { moveNotation } from "./notation.js";
+import { moveNotation, parseMove, resolveMove } from "./notation.js";
 import { at, boardFrom } from "./engine.test.js";
 
 /** Escribe la jugada de una casilla a otra: escribir(board, "b1", "d2"). */
@@ -99,5 +99,85 @@ describe("desambiguación (el bug que rompía las cartas)", () => {
 describe("bordes", () => {
   it("una casilla de origen vacía devuelve texto vacío en vez de romper", () => {
     expect(escribir(boardFrom({}), "e2", "e4")).toBe("");
+  });
+});
+
+describe("parseMove", () => {
+  it("un peón es sólo la casilla de destino", () => {
+    expect(parseMove("e4")).toEqual({ type: "P", disambig: "", capture: false, dest: "e4", promoted: false });
+  });
+
+  it("una pieza lleva su letra", () => {
+    expect(parseMove("Cf3")).toEqual({ type: "N", disambig: "", capture: false, dest: "f3", promoted: false });
+  });
+
+  it("reconoce la captura", () => {
+    expect(parseMove("exd5")).toEqual({ type: "P", disambig: "e", capture: true, dest: "d5", promoted: false });
+    expect(parseMove("Axf4")).toEqual({ type: "B", disambig: "", capture: true, dest: "f4", promoted: false });
+  });
+
+  it("reconoce la coronación", () => {
+    expect(parseMove("e8=D")).toEqual({ type: "P", disambig: "", capture: false, dest: "e8", promoted: true });
+  });
+
+  it("reconoce los tres niveles de desambiguación", () => {
+    expect(parseMove("Cbd2")).toMatchObject({ disambig: "b", dest: "d2" });
+    expect(parseMove("C3d4")).toMatchObject({ disambig: "3", dest: "d4" });
+    expect(parseMove("Da1e5")).toMatchObject({ disambig: "a1", dest: "e5" });
+  });
+
+  it("tolera el +/# de jaque, aunque la app todavía no los escriba", () => {
+    expect(parseMove("Dh5+")).toMatchObject({ dest: "h5" });
+    expect(parseMove("Dh7#")).toMatchObject({ dest: "h7" });
+  });
+
+  it("un token sin forma de jugada devuelve null en vez de romper", () => {
+    expect(parseMove("")).toBeNull();
+    expect(parseMove("hola")).toBeNull();
+    expect(parseMove("O-O")).toBeNull(); // enroque: no soportado todavía
+    expect(parseMove(undefined)).toBeNull();
+  });
+});
+
+describe("resolveMove", () => {
+  const resolver = (board, turn, token) => resolveMove(board, turn, parseMove(token));
+
+  /** Arma el { fromRow, fromCol, toRow, toCol } esperado a partir de dos casillas. */
+  const desdeHasta = (desde, hasta) => ({
+    fromRow: at(desde).row,
+    fromCol: at(desde).col,
+    toRow: at(hasta).row,
+    toCol: at(hasta).col,
+  });
+
+  it("encuentra el peón que puede avanzar", () => {
+    const board = boardFrom({ e2: "P" });
+    expect(resolver(board, "w", "e4")).toEqual(desdeHasta("e2", "e4"));
+  });
+
+  it("usa la desambiguación para elegir entre dos candidatos", () => {
+    const board = boardFrom({ b1: "N", f1: "N" });
+    expect(resolver(board, "w", "Cbd2")).toEqual(desdeHasta("b1", "d2"));
+    expect(resolver(board, "w", "Cfd2")).toEqual(desdeHasta("f1", "d2"));
+  });
+
+  it("no resuelve una jugada ambigua sin desambiguación", () => {
+    const board = boardFrom({ b1: "N", f1: "N" });
+    expect(resolver(board, "w", "Cd2")).toBeNull();
+  });
+
+  it("no resuelve una jugada que ninguna pieza propia puede hacer", () => {
+    const board = boardFrom({ e2: "P" });
+    expect(resolver(board, "w", "Cf3")).toBeNull(); // no hay caballo
+    expect(resolver(board, "b", "e4")).toBeNull(); // el peón es blanco
+  });
+
+  it("no confunde una jugada marcada como captura con una que no lo es", () => {
+    const board = boardFrom({ e4: "P" }); // d5 vacía: no hay nada para comer
+    expect(resolver(board, "w", "exd5")).toBeNull();
+  });
+
+  it("null de entrada (token inválido) no rompe", () => {
+    expect(resolveMove(boardFrom({}), "w", null)).toBeNull();
   });
 });

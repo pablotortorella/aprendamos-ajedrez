@@ -94,3 +94,85 @@ export function moveNotation(board, fromRow, fromCol, toRow, toCol, opciones = {
   const desambigua = disambiguation(board, fromRow, fromCol, toRow, toCol);
   return `${letra}${desambigua}${capture ? "x" : ""}${dest}`;
 }
+
+/** Inverso de PIECE_LETTERS, para leer una jugada en vez de escribirla. */
+const LETTER_TO_TYPE = Object.fromEntries(
+  Object.entries(PIECE_LETTERS)
+    .filter(([type]) => type !== "P")
+    .map(([type, letra]) => [letra, type])
+);
+
+/**
+ * Interpreta un token de notación algebraica española suelto (sin el número
+ * de jugada adelante). No mira el tablero: sólo separa la forma del texto en
+ * sus partes. La resolución contra una posición concreta la hace resolveMove.
+ *
+ * Tolera el `+`/`#` de jaque y jaque mate si aparecen, aunque hoy la app
+ * todavía no los escribe.
+ *
+ * @returns {{type: string, disambig: string, capture: boolean, dest: string,
+ *   promoted: boolean} | null} null si el token no tiene forma de jugada.
+ */
+export function parseMove(token) {
+  let t = typeof token === "string" ? token.trim() : "";
+  if (!t) return null;
+  t = t.replace(/[+#]+$/, "");
+
+  let promoted = false;
+  if (/=D$/.test(t)) {
+    promoted = true;
+    t = t.slice(0, -2);
+  }
+
+  let type = "P";
+  if (LETTER_TO_TYPE[t[0]]) {
+    type = LETTER_TO_TYPE[t[0]];
+    t = t.slice(1);
+  }
+
+  const capture = t.includes("x");
+  if (capture) t = t.replace("x", "");
+
+  if (t.length < 2) return null;
+  const dest = t.slice(-2);
+  const disambig = t.slice(0, -2);
+
+  if (!/^[a-h][1-8]$/.test(dest)) return null;
+  if (disambig && !/^[a-h]$|^[1-8]$|^[a-h][1-8]$/.test(disambig)) return null;
+
+  return { type, disambig, capture, dest, promoted };
+}
+
+/**
+ * Busca en el tablero la jugada que escribió `parsed` (salida de parseMove) y
+ * devuelve sus coordenadas de origen y destino, o null si ninguna pieza propia
+ * puede hacer esa jugada ahí (texto inválido, o jugada ilegal en esa posición).
+ *
+ * Usa los mismos movimientos pseudo-legales que el resto de la app: una carta
+ * que pegue una jugada que sólo es "ilegal" por dejar el rey en jaque hoy se
+ * acepta igual, igual que al jugar a mano (ver nota en generateMoves).
+ */
+export function resolveMove(board, turn, parsed) {
+  if (!parsed) return null;
+  const { type, disambig, capture, dest } = parsed;
+  const white = turn === "w";
+  const destCol = FILES.indexOf(dest[0]);
+  const destRow = 8 - Number(dest[1]);
+  if (destCol < 0) return null;
+
+  const candidatas = [];
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const piece = board[r][c];
+      if (!piece || pieceType(piece) !== type || isWhite(piece) !== white) continue;
+      const move = generateMoves(board, r, c).find((m) => m.row === destRow && m.col === destCol);
+      if (!move || move.capture !== capture) continue;
+      if (disambig.length === 2 && algebraic(r, c) !== disambig) continue;
+      if (disambig.length === 1 && /[a-h]/.test(disambig) && FILES[c] !== disambig) continue;
+      if (disambig.length === 1 && /[1-8]/.test(disambig) && String(8 - r) !== disambig) continue;
+      candidatas.push({ row: r, col: c });
+    }
+  }
+  if (candidatas.length !== 1) return null;
+  return { fromRow: candidatas[0].row, fromCol: candidatas[0].col, toRow: destRow, toCol: destCol };
+}

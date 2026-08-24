@@ -85,6 +85,29 @@ const KNIGHT_OFFSETS = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [
 const KING_OFFSETS = [...DIAG, ...ORTH];
 
 /**
+ * Aplica un movimiento y devuelve el tablero resultante (no muta el original).
+ * Corona automáticamente a Dama: es la única coronación que la app conoce.
+ *
+ * No valida legalidad ni que la jugada exista: eso es responsabilidad de quien
+ * llama (el click en el tablero, o el que reconstruye una partida pegada).
+ */
+export function applyMove(board, fromRow, fromCol, toRow, toCol) {
+  const piece = board[fromRow][fromCol];
+  const type = pieceType(piece);
+  const white = isWhite(piece);
+  const newBoard = cloneBoard(board);
+  newBoard[fromRow][fromCol] = null;
+  let finalPiece = piece;
+  let promoted = false;
+  if (type === "P" && (toRow === 0 || toRow === 7)) {
+    finalPiece = white ? "Q" : "q";
+    promoted = true;
+  }
+  newBoard[toRow][toCol] = finalPiece;
+  return { board: newBoard, promoted };
+}
+
+/**
  * Devuelve los destinos posibles de la pieza que está en (row, col).
  * Cada movimiento es `{ row, col, capture }`. Si la casilla está vacía, [].
  */

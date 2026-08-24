@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyBoard, createInitialBoard, generateMoves, FILES } from "./engine.js";
+import { applyMove, createEmptyBoard, createInitialBoard, generateMoves, FILES } from "./engine.js";
 
 /** Arma un tablero desde coordenadas de ajedrez: boardFrom({ e4: "P", d5: "p" }). */
 export function boardFrom(piezas) {
@@ -115,5 +115,38 @@ describe("posición inicial", () => {
 
   it("una casilla vacía no devuelve movimientos", () => {
     expect(generateMoves(createInitialBoard(), 4, 4)).toEqual([]);
+  });
+});
+
+describe("applyMove", () => {
+  it("mueve la pieza y deja vacío el origen, sin tocar el tablero original", () => {
+    const board = boardFrom({ e2: "P" });
+    const { board: nuevo } = applyMove(board, at("e2").row, at("e2").col, at("e4").row, at("e4").col);
+    expect(nuevo[at("e2").row][at("e2").col]).toBeNull();
+    expect(nuevo[at("e4").row][at("e4").col]).toBe("P");
+    expect(board[at("e2").row][at("e2").col]).toBe("P"); // el original no cambia
+  });
+
+  it("reemplaza la pieza comida en destino", () => {
+    const board = boardFrom({ c1: "B", f4: "p" });
+    const { board: nuevo } = applyMove(board, at("c1").row, at("c1").col, at("f4").row, at("f4").col);
+    expect(nuevo[at("f4").row][at("f4").col]).toBe("B");
+  });
+
+  it("un peón que llega a la última fila corona a Dama, del color que corresponda", () => {
+    const blancas = boardFrom({ e7: "P" });
+    const { board: b, promoted: pb } = applyMove(blancas, at("e7").row, at("e7").col, at("e8").row, at("e8").col);
+    expect(b[at("e8").row][at("e8").col]).toBe("Q");
+    expect(pb).toBe(true);
+
+    const negras = boardFrom({ e2: "p" });
+    const { board: n, promoted: pn } = applyMove(negras, at("e2").row, at("e2").col, at("e1").row, at("e1").col);
+    expect(n[at("e1").row][at("e1").col]).toBe("q");
+    expect(pn).toBe(true);
+  });
+
+  it("un peón que no llega a la última fila no corona", () => {
+    const { promoted } = applyMove(boardFrom({ e2: "P" }), at("e2").row, at("e2").col, at("e4").row, at("e4").col);
+    expect(promoted).toBe(false);
   });
 });

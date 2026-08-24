@@ -49,3 +49,26 @@ export function textoCarta(log, nombres = {}) {
 
   return `${saludo}\nAcá van mis jugadas:\n\n${lineas.join("\n")}\n\n¡Espero tu respuesta!\n${firma}`;
 }
+
+/**
+ * Inverso de textoCarta: saca la lista de jugadas de un texto pegado. Sirve
+ * tanto si se pega la carta entera (con saludo y firma) como si se pega sólo
+ * la lista de jugadas — cualquier línea que no tenga forma de "1. e4  e5" se
+ * ignora, no rompe nada.
+ *
+ * No valida que las jugadas sean legales ni que la notación tenga sentido:
+ * eso es trabajo de quien reconstruye el tablero con esta lista.
+ *
+ * @param {string} texto
+ * @returns {Array<{ number: number, white: string, black: string|null }>}
+ */
+export function extraerJugadas(texto) {
+  if (typeof texto !== "string") return [];
+  const jugadas = [];
+  for (const linea of texto.split(/\r?\n/)) {
+    const m = linea.match(/^\s*(\d+)\.\s*(\S+)(?:\s+(\S+))?\s*$/);
+    if (!m) continue;
+    jugadas.push({ number: Number(m[1]), white: m[2], black: m[3] ?? null });
+  }
+  return jugadas;
+}
