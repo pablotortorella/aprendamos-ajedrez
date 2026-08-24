@@ -21,6 +21,7 @@ import {
   leerPuntos,
 } from "./storage.js";
 import { extraerJugadas, recortarMientrasEscribe, textoCarta } from "./carta.js";
+import { descargarTableroComoImagen } from "./tableroImagen.js";
 
 /* ============ Paleta y tipografía ============
    Tema: "Cartero de Ajedrez" — inspirado en la partida por correspondencia
@@ -605,6 +606,14 @@ function Level4({ nombres, onCambiarNombres }) {
 
   const { board, turn, log } = partida;
 
+  const descargarImagen = () => {
+    const jugadasJugadas = log.reduce((total, j) => total + (j.white ? 1 : 0) + (j.black ? 1 : 0), 0);
+    descargarTableroComoImagen(board, {
+      flipped,
+      nombreArchivo: `cartero-ajedrez-jugada-${jugadasJugadas}.png`,
+    });
+  };
+
   // Se derivan del tablero en cada render, no se guardan como estado aparte:
   // así nunca pueden quedar desincronizados de la posición real.
   const enJaque = useMemo(() => isInCheck(board, turn === "w"), [board, turn]);
@@ -750,6 +759,20 @@ function Level4({ nombres, onCambiarNombres }) {
             className="w-6 h-6 rounded-full text-xs leading-none shadow-sm"
           >
             🔄
+          </button>
+          <button
+            onClick={descargarImagen}
+            title="Descargar imagen del tablero"
+            aria-label="Descargar imagen del tablero"
+            style={{
+              fontFamily: "Baloo 2",
+              background: "transparent",
+              color: COLORS.tealDark,
+              border: `2px solid ${COLORS.goldSoft}`,
+            }}
+            className="w-6 h-6 rounded-full text-xs leading-none shadow-sm"
+          >
+            📷
           </button>
         </div>
         <Board
