@@ -81,7 +81,10 @@ describe("validación de la partida", () => {
   });
 
   it("acepta el log real de una partida empezada", () => {
-    const log = [{ number: 1, white: "e4", black: "e5" }, { number: 2, white: "Cf3", black: null }];
+    const log = [
+      { number: 1, white: "e4", black: "e5" },
+      { number: 2, white: "Cf3", black: null },
+    ];
     expect(esPartidaValida({ version: 1, ...partida(), log })).toBe(true);
   });
 
@@ -111,7 +114,7 @@ describe("guardar y leer la partida", () => {
   it("con una partida corrupta devuelve null Y la limpia", () => {
     globalThis.localStorage.setItem(
       "cartero-ajedrez:partida",
-      JSON.stringify({ version: 1, board: [[1, 2]], turn: "w", log: [] })
+      JSON.stringify({ version: 1, board: [[1, 2]], turn: "w", log: [] }),
     );
     expect(leerPartida()).toBe(null);
     expect(globalThis.localStorage.getItem("cartero-ajedrez:partida")).toBe(null);
@@ -174,7 +177,7 @@ describe("nombres", () => {
   it("con campos que no son texto devuelve vacíos", () => {
     globalThis.localStorage.setItem(
       "cartero-ajedrez:nombres",
-      JSON.stringify({ remitente: 42, destinataria: { a: 1 } })
+      JSON.stringify({ remitente: 42, destinataria: { a: 1 } }),
     );
     expect(leerNombres()).toEqual({ remitente: "", destinataria: "" });
   });

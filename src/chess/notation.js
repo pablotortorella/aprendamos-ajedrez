@@ -102,7 +102,7 @@ export function moveNotation(board, fromRow, fromCol, toRow, toCol, opciones = {
 const LETTER_TO_TYPE = Object.fromEntries(
   Object.entries(PIECE_LETTERS)
     .filter(([type]) => type !== "P")
-    .map(([type, letra]) => [letra, type])
+    .map(([type, letra]) => [letra, type]),
 );
 
 /**

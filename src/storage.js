@@ -39,7 +39,7 @@ export function esTableroValido(board) {
     (fila) =>
       Array.isArray(fila) &&
       fila.length === 8 &&
-      fila.every((casilla) => casilla === null || PIEZAS_VALIDAS.has(casilla))
+      fila.every((casilla) => casilla === null || PIEZAS_VALIDAS.has(casilla)),
   );
 }
 
@@ -180,7 +180,7 @@ export function guardarNombres(nombres) {
       JSON.stringify({
         remitente: limpiarNombre(nombres?.remitente),
         destinataria: limpiarNombre(nombres?.destinataria),
-      })
+      }),
     );
     return true;
   } catch {

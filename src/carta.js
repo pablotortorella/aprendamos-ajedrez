@@ -40,9 +40,7 @@ export function textoCarta(log, nombres = {}) {
   const destinataria = limpiarNombre(nombres.destinataria);
   const remitente = limpiarNombre(nombres.remitente);
 
-  const lineas = (Array.isArray(log) ? log : []).map(
-    (m) => `${m.number}. ${m.white}${m.black ? "  " + m.black : ""}`
-  );
+  const lineas = (Array.isArray(log) ? log : []).map((m) => `${m.number}. ${m.white}${m.black ? "  " + m.black : ""}`);
 
   const saludo = destinataria ? `¡Hola ${destinataria}!` : "¡Hola!";
   const firma = remitente ? `Cariños, ${remitente}` : "Cariños";

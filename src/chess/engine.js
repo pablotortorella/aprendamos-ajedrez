@@ -82,8 +82,11 @@ function stepMoves(board, row, col, white, offsets) {
   return moves;
 }
 
+// prettier-ignore
 const DIAG = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+// prettier-ignore
 const ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+// prettier-ignore
 const KNIGHT_OFFSETS = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
 const KING_OFFSETS = [...DIAG, ...ORTH];
 

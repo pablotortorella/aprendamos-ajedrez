@@ -12,6 +12,7 @@
 
 import { FILES, isWhite, pieceType } from "./chess/engine.js";
 
+// prettier-ignore
 const UNICODE = {
   wP: "♙", wN: "♘", wB: "♗", wR: "♖", wQ: "♕", wK: "♔",
   bP: "♟", bN: "♞", bB: "♝", bR: "♜", bQ: "♛", bK: "♚",

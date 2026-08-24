@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   algebraic,
   applyMove,
@@ -12,14 +12,7 @@ import {
   isWhite,
 } from "./chess/engine.js";
 import { moveNotation, parseMove, resolveMove, PIECE_LETTERS } from "./chess/notation.js";
-import {
-  guardarNombres,
-  guardarPartida,
-  guardarPuntos,
-  leerNombres,
-  leerPartida,
-  leerPuntos,
-} from "./storage.js";
+import { guardarNombres, guardarPartida, guardarPuntos, leerNombres, leerPartida, leerPuntos } from "./storage.js";
 import { extraerJugadas, recortarMientrasEscribe, textoCarta } from "./carta.js";
 import { descargarTableroComoImagen } from "./tableroImagen.js";
 
@@ -138,6 +131,7 @@ const TIPS = [
   },
 ];
 
+// prettier-ignore
 const UNICODE = {
   wP: "♙", wN: "♘", wB: "♗", wR: "♖", wQ: "♕", wK: "♔",
   bP: "♟", bN: "♞", bB: "♝", bR: "♜", bQ: "♛", bK: "♚",
@@ -161,28 +155,23 @@ function Square({ dark, children, onClick, highlight, capture, selected, coordLa
         outline: selected ? `3px solid ${COLORS.gold}` : "none",
         outlineOffset: "-3px",
         transition: "box-shadow 0.15s ease",
-        boxShadow: flash === "bien"
-          ? `inset 0 0 0 999px rgba(46,139,87,0.55)`
-          : flash === "mal"
-          ? `inset 0 0 0 999px rgba(224,87,76,0.55)`
-          : correctReveal
-          ? `inset 0 0 0 999px rgba(232,163,61,0.55)`
-          : "none",
+        boxShadow:
+          flash === "bien"
+            ? `inset 0 0 0 999px rgba(46,139,87,0.55)`
+            : flash === "mal"
+              ? `inset 0 0 0 999px rgba(224,87,76,0.55)`
+              : correctReveal
+                ? `inset 0 0 0 999px rgba(232,163,61,0.55)`
+                : "none",
       }}
       className="aspect-square flex items-center justify-center select-none"
     >
       {children}
       {highlight && !capture && (
-        <div
-          style={{ background: COLORS.moveHint, opacity: 0.85 }}
-          className="absolute rounded-full w-1/3 h-1/3"
-        />
+        <div style={{ background: COLORS.moveHint, opacity: 0.85 }} className="absolute rounded-full w-1/3 h-1/3" />
       )}
       {capture && (
-        <div
-          style={{ border: `4px solid ${COLORS.coral}`, opacity: 0.9 }}
-          className="absolute inset-1 rounded-md"
-        />
+        <div style={{ border: `4px solid ${COLORS.coral}`, opacity: 0.9 }} className="absolute inset-1 rounded-md" />
       )}
       {inCheck && (
         <div
@@ -216,7 +205,12 @@ function Board({
 }) {
   return (
     <div
-      style={{ border: `6px solid ${COLORS.tealDark}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 8px 24px rgba(22,78,83,0.25)" }}
+      style={{
+        border: `6px solid ${COLORS.tealDark}`,
+        borderRadius: 12,
+        overflow: "hidden",
+        boxShadow: "0 8px 24px rgba(22,78,83,0.25)",
+      }}
       className="grid grid-cols-8 w-full max-w-md mx-auto"
     >
       {board.map((rowArr, displayRow) =>
@@ -249,7 +243,7 @@ function Board({
               </span>
             </Square>
           );
-        })
+        }),
       )}
     </div>
   );
@@ -276,7 +270,10 @@ function LevelTab({ active, onClick, label, emoji }) {
 
 function Level1() {
   const emptyBoard = useMemo(() => createEmptyBoard(), []);
-  const [target, setTarget] = useState(() => ({ row: Math.floor(Math.random() * 8), col: Math.floor(Math.random() * 8) }));
+  const [target, setTarget] = useState(() => ({
+    row: Math.floor(Math.random() * 8),
+    col: Math.floor(Math.random() * 8),
+  }));
   const [feedback, setFeedback] = useState(null);
   const [flashSquare, setFlashSquare] = useState(null);
   const [score, setScore] = useState(leerPuntos);
@@ -364,10 +361,10 @@ function Level1() {
           {feedback === "bien"
             ? "¡Muy bien! 🎉"
             : feedback === "mal" && reveal
-            ? "¡Mirá, ahí es! (la casilla dorada) 👉"
-            : feedback === "mal"
-            ? "Ahí no era, ¡probá de nuevo!"
-            : "\u00A0"}
+              ? "¡Mirá, ahí es! (la casilla dorada) 👉"
+              : feedback === "mal"
+                ? "Ahí no era, ¡probá de nuevo!"
+                : "\u00A0"}
         </span>
       </div>
       <div style={{ fontFamily: "Baloo 2", color: COLORS.gold }} className="text-base font-extrabold">
@@ -575,11 +572,26 @@ function reconstruirPartida(texto) {
       if (!resolved) {
         return { error: `No pude entender la jugada "${texto}" (número ${jugada.number}).` };
       }
-      const { board: newBoard, promoted } = applyMove(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol);
-      const notation = notarJugada(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol, newBoard, turn, {
-        capture: parsed.capture,
-        promoted,
-      });
+      const { board: newBoard, promoted } = applyMove(
+        board,
+        resolved.fromRow,
+        resolved.fromCol,
+        resolved.toRow,
+        resolved.toCol,
+      );
+      const notation = notarJugada(
+        board,
+        resolved.fromRow,
+        resolved.fromCol,
+        resolved.toRow,
+        resolved.toCol,
+        newBoard,
+        turn,
+        {
+          capture: parsed.capture,
+          promoted,
+        },
+      );
       previous = { board, turn, log };
       log = agregarJugada(log, turn, notation);
       board = newBoard;
@@ -617,14 +629,8 @@ function Level4({ nombres, onCambiarNombres }) {
   // Se derivan del tablero en cada render, no se guardan como estado aparte:
   // así nunca pueden quedar desincronizados de la posición real.
   const enJaque = useMemo(() => isInCheck(board, turn === "w"), [board, turn]);
-  const enJaqueMate = useMemo(
-    () => enJaque && !hasAnyLegalMoves(board, turn === "w"),
-    [board, turn, enJaque]
-  );
-  const casillaDeJaque = useMemo(
-    () => (enJaque ? findKing(board, turn === "w") : null),
-    [board, turn, enJaque]
-  );
+  const enJaqueMate = useMemo(() => enJaque && !hasAnyLegalMoves(board, turn === "w"), [board, turn, enJaque]);
+  const casillaDeJaque = useMemo(() => (enJaque ? findKing(board, turn === "w") : null), [board, turn, enJaque]);
 
   // Una partida por correspondencia dura semanas: recargar no puede borrarla.
   useEffect(() => {
@@ -722,7 +728,7 @@ function Level4({ nombres, onCambiarNombres }) {
     try {
       await navigator.clipboard.writeText(cartaTexto);
       setCopied(true);
-    } catch (e) {
+    } catch {
       setCopied(false);
     }
   };
@@ -867,9 +873,7 @@ function Level4({ nombres, onCambiarNombres }) {
             <input
               type="text"
               value={nombres.destinataria}
-              onChange={(e) =>
-                onCambiarNombres({ ...nombres, destinataria: recortarMientrasEscribe(e.target.value) })
-              }
+              onChange={(e) => onCambiarNombres({ ...nombres, destinataria: recortarMientrasEscribe(e.target.value) })}
               placeholder="Su nombre"
               style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
@@ -882,9 +886,7 @@ function Level4({ nombres, onCambiarNombres }) {
             <input
               type="text"
               value={nombres.remitente}
-              onChange={(e) =>
-                onCambiarNombres({ ...nombres, remitente: recortarMientrasEscribe(e.target.value) })
-              }
+              onChange={(e) => onCambiarNombres({ ...nombres, remitente: recortarMientrasEscribe(e.target.value) })}
               placeholder="Tu nombre"
               style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
@@ -1074,10 +1076,7 @@ export default function App() {
         <LevelTab active={level === 5} onClick={() => setLevel(5)} emoji="👑" label="Consejos" />
       </nav>
 
-      <main
-        style={{ background: "rgba(255,255,255,0.5)", borderRadius: 24 }}
-        className="max-w-3xl mx-auto p-4 sm:p-6"
-      >
+      <main style={{ background: "rgba(255,255,255,0.5)", borderRadius: 24 }} className="max-w-3xl mx-auto p-4 sm:p-6">
         {level === 1 && <Level2 />}
         {level === 2 && <Level1 />}
         {level === 3 && <Level3 />}
