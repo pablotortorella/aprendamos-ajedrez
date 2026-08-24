@@ -31,6 +31,13 @@ lugar, no se renumera el resto.
   sumar varios puntos con la misma casilla. El tablero ahora ignora los toques mientras
   festeja, la pista dorada se deriva de los errores en vez de ser estado aparte, y los
   temporizadores se cancelan al cambiar de nivel.
+- **~~8. Girar el tablero cuando juegan las negras~~** — botón manual (🔄, junto al
+  indicador de turno) que gira el tablero 180° en el nivel "Escribí tu carta": coordenadas
+  y piezas se relabelan, el estado de la partida no cambia. Manual y no automático por
+  turno, para no sorprender a mitad de jugada.
+- **Publicar en GitHub Pages** — deploy automático por GitHub Actions
+  (`.github/workflows/deploy.yml`) en cada push a `main`, en
+  https://pablotortorella.github.io/aprendamos-ajedrez/
 
 **Los cuatro P0 están cerrados.**
 
@@ -38,21 +45,32 @@ lugar, no se renumera el resto.
 
 ## P1 — Cierra el círculo de la correspondencia
 
-### 5. Nivel "Leé la carta de Paulina"
+### ~~5. Nivel "Leé la carta de Paulina"~~ — bajado de prioridad (2026-08-24)
 
-Hoy la app solo sirve para **escribir**. La mitad del intercambio —entender lo que llega—
-sigue siendo trabajo de un adulto.
+La idea original era un nivel de lectura paso a paso ("pegar el texto de la carta y que
+el tablero reproduzca las jugadas una por una, con anterior/siguiente"), pensado como la
+mitad pedagógica que falta a la app: hoy solo enseña a *escribir* jugadas, no a *leer* las
+que llegan.
 
-- Pegar el texto de la carta que llegó y que el tablero reproduzca las jugadas, una por una,
-  con botones de anterior/siguiente.
-- Necesita un parser de notación española → movimiento, que es el inverso exacto de
-  `moveNotation`. Bien testeado, se puede reusar para validar lo que la app misma escribe.
-- Es la funcionalidad de mayor valor pedagógico que falta: le enseña a leer, no solo a anotar.
+Se saca de foco porque la carta real vive **fuera de la app** (hoy por WhatsApp) y eso no
+va a cambiar: no tiene sentido construir una lección de lectura dentro de la app para un
+paso que ya pasa por otro canal. Si en algún momento se necesita reconstruir una posición
+a partir de jugadas pegadas, esa necesidad más chica y concreta quedó capturada en el
+punto 6 — sin la capa de "lección" encima.
 
-### 6. Continuar una partida ya empezada
+### 6. Subir las jugadas de una partida en curso
 
-Poder pegar las jugadas anteriores y que la app reconstruya la posición, en vez de tener
-que rejugarlas a mano cada vez. Depende del parser del punto 5.
+Poder pegar la lista de jugadas de una partida que se viene jugando (por WhatsApp u otro
+canal) y que la app reconstruya la posición, para seguir jugando o anotando desde ahí sin
+rejugar todo a mano. Es la otra mitad de "Copiar carta" (que ya baja/exporta las jugadas):
+bajar ya existe, subir no.
+
+- Necesita el mismo parser de notación española → movimiento que pedía el punto 5 (inverso
+  exacto de `moveNotation`), pero sin la UI de lectura paso a paso: acá alcanza con aplicar
+  toda la lista de una y quedar parado en la posición resultante, lista para la próxima
+  jugada.
+- Útil también para sincronizar el tablero entre dispositivos si la partida se retoma en
+  otro lado.
 
 ### 7. Detección de jaque
 
@@ -62,11 +80,6 @@ cartas sean notacionalmente correctas.
 
 - Implica pasar de movimientos pseudo-legales a legales: filtrar las jugadas que dejan al
   propio rey en jaque. Es lo que hoy permite "comerse el rey" y que la partida siga.
-
-### 8. Girar el tablero cuando juegan las negras
-
-Si Celeste juega con negras, hoy ve la partida al revés. Un botón de girar (o giro
-automático según el turno) resuelve el modo "dos jugadores en el mismo dispositivo".
 
 ---
 
@@ -203,11 +216,12 @@ La versión amplia —volver a cualquier jugada anterior, como un navegador de p
 tiene sentido más adelante, y por dos motivos distintos:
 
 - **Para repasar juntos**: recorrer la partida jugada por jugada y comentar qué pasó.
-- **Porque el nivel "leer la carta" (punto 5) ya necesita ese mecanismo**: avanzar y
-  retroceder jugadas es exactamente lo que hace ese nivel.
+- **Porque "subir las jugadas" (punto 6) ya necesita ese mecanismo**: reconstruir la
+  posición jugada por jugada es justamente cómo se valida y se muestra el resultado de
+  pegar una lista de jugadas.
 
-Por eso conviene hacerlo *con* el punto 5 y no antes: ahí el rebobinado no es una función
-extra en un tablero de juego, sino el modo de uso natural de una pantalla nueva.
+Por eso conviene hacerlo *con* el punto 6 y no antes: ahí el rebobinado no es una función
+extra en un tablero de juego, sino parte natural de reconstruir una partida pegada.
 
 Implica cambiar `previous` (una sola posición) por un historial de posiciones. El estado
 del nivel 4 ya está agrupado en un solo objeto, así que el cambio queda contenido.
@@ -219,8 +233,4 @@ del nivel 4 ya está agrupado en un solo objeto, así que el cambio queda conten
 - **Más contenido**: mates básicos (mate del pasillo, mate del loco), un glosario, y
   consejos que se desbloqueen a medida que avanza.
 - **PWA**: instalable y funcionando sin internet, para usarla en la tablet en cualquier lado.
-- **Publicar en GitHub Pages**: hoy hay que clonar el repo y correr `npm install` para
-  verla. Un link haría que Alejo y Paulina la puedan usar también. El `base: "./"` del
-  `vite.config.js` ya está puesto para eso.
-- **Modo dos jugadores en un dispositivo**, con el tablero girando en cada turno.
 - **Exportar la partida en PGN**, para poder abrirla en Lichess y revisarla juntos.
