@@ -65,6 +65,13 @@ lugar, no se renumera el resto.
   piezas blancas llevan un trazo oscuro además del relleno para que se lean solas en la
   imagen — el mismo glyph de contorno que el backlog #16 marca como bug en la UI en vivo,
   resuelto acá porque una imagen ya mandada no se puede arreglar después.
+- **~~11. Linter, formato y CI~~** — ESLint (flat config, `eslint.config.js`) con
+  react-hooks + react-refresh, y Prettier (`printWidth: 120`, sin tocar los `.md`). Las
+  tablas compactas (offsets de movimiento, mapas de glyphs) quedan con `// prettier-ignore`
+  porque Prettier las expande a una línea por elemento por default. Encontró dos cosas
+  reales: un import de `React` sin usar y un `catch (e)` con el error sin usar. Nuevo
+  workflow `.github/workflows/ci.yml`: `format:check + lint + test + build` en cada push a
+  `main` y en cada PR, separado del deploy para no bloquearlo.
 
 **Los cuatro P0 están cerrados.**
 
@@ -114,12 +121,6 @@ componentes React: hoy esa parte se verifica a mano en el navegador.
 
 - Sumar `@testing-library/react` y cubrir el flujo del nivel 4 (jugar, deshacer, reiniciar).
 - Un test que valide que la partida guardada se recupera al montar el componente.
-
-### 11. Linter, formato y CI
-
-- ESLint + Prettier, para que el estilo no se discuta a mano.
-- GitHub Actions que corra `lint + test + build` en cada PR. Hoy nada impide subir algo
-  que no compila.
 
 ### 12. Bugs técnicos concretos ya detectados
 

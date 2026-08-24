@@ -26,8 +26,14 @@ Otros comandos:
 | ------------------ | --------------------------------------------- |
 | `npm test`         | Corre los tests del motor, la notación y el guardado |
 | `npm run test:watch` | Los mismos tests, reejecutándose al guardar |
+| `npm run lint`     | ESLint sobre todo el proyecto                 |
+| `npm run format`   | Prettier: reformatea el código (no toca los `.md`) |
+| `npm run format:check` | Prettier en modo chequeo, sin escribir nada |
 | `npm run build`    | Genera el sitio estático en `dist/`           |
 | `npm run preview`  | Sirve el `dist/` ya compilado, para revisarlo  |
+
+Un GitHub Actions (`.github/workflows/ci.yml`) corre `format:check + lint + test + build`
+en cada push a `main` y en cada Pull Request.
 
 Stack: **Vite + React 19 + Tailwind CSS 4**. No hay backend ni base de datos: es una
 app 100% estática, se puede publicar en cualquier hosting de archivos.
