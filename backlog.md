@@ -72,6 +72,13 @@ lugar, no se renumera el resto.
   reales: un import de `React` sin usar y un `catch (e)` con el error sin usar. Nuevo
   workflow `.github/workflows/ci.yml`: `format:check + lint + test + build` en cada push a
   `main` y en cada PR, separado del deploy para no bloquearlo.
+- **~~9. Terminar de partir `src/App.jsx`~~** — `App.jsx` bajó de 1104 a 71 líneas: sólo
+  encabezado, menú y armado de niveles. Salieron `theme.js`, `content/pieces.js`,
+  `content/tips.js`, `components/Board.jsx`, `components/LevelTab.jsx` y un archivo por
+  nivel en `levels/`. Movimiento puro de código, sin cambios de lógica; verificado a mano
+  en los 5 niveles además de tests y build. De paso, el README (que nunca se había
+  actualizado desde el clon inicial) quedó al día: ya no dice "no hay detección de jaque"
+  ni "movimientos pseudo-legales", que habían quedado desactualizados desde el punto 7.
 
 **Los cuatro P0 están cerrados.**
 
@@ -97,22 +104,6 @@ punto 6 — sin la capa de "lección" encima.
 ## P2 — Salud técnica
 
 Nada de esto se ve, pero sin esto cada cambio nuevo cuesta más que el anterior.
-
-### 9. Terminar de partir `src/App.jsx`
-
-Ya salieron el motor (`chess/engine.js`), la notación (`chess/notation.js`) y el guardado
-(`storage.js`). Falta lo que sigue siendo UI en un solo archivo:
-
-```
-src/
-  content/pieces.js     PIECE_INFO
-  content/tips.js       TIPS
-  components/Board.jsx  Board, Square
-  levels/Level1.jsx ... un archivo por nivel
-  theme.js              COLORS y tipografías
-```
-
-Menos urgente que antes: lo testeable ya está afuera. Es prolijidad, no riesgo.
 
 ### 10. Tests de los componentes
 
