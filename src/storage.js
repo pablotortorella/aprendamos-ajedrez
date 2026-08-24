@@ -9,8 +9,11 @@
    rompiendo en cada recarga, porque el dato malo sigue guardado. Por eso todo lo
    que entra se valida, y ante la menor duda se descarta y se arranca de cero. */
 
+import { limpiarNombre } from "./carta.js";
+
 const CLAVE_PARTIDA = "cartero-ajedrez:partida";
 const CLAVE_PUNTOS = "cartero-ajedrez:puntos-nivel1";
+const CLAVE_NOMBRES = "cartero-ajedrez:nombres";
 
 /** Si el formato guardado cambia, subir este número invalida lo viejo. */
 const VERSION = 1;
@@ -139,6 +142,46 @@ export function guardarPuntos(puntos) {
   if (!store) return false;
   try {
     store.setItem(CLAVE_PUNTOS, String(puntos));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Nombres de quien escribe y quien recibe la carta. Si no hay nada guardado (o
+ * lo guardado no sirve), devuelve dos strings vacíos: la carta sale igual, sólo
+ * que con un saludo genérico.
+ */
+export function leerNombres() {
+  const vacio = { remitente: "", destinataria: "" };
+  const store = almacen();
+  if (!store) return vacio;
+  try {
+    const crudo = store.getItem(CLAVE_NOMBRES);
+    if (!crudo) return vacio;
+    const datos = JSON.parse(crudo);
+    if (datos === null || typeof datos !== "object") return vacio;
+    return {
+      remitente: limpiarNombre(datos.remitente),
+      destinataria: limpiarNombre(datos.destinataria),
+    };
+  } catch {
+    return vacio;
+  }
+}
+
+export function guardarNombres(nombres) {
+  const store = almacen();
+  if (!store) return false;
+  try {
+    store.setItem(
+      CLAVE_NOMBRES,
+      JSON.stringify({
+        remitente: limpiarNombre(nombres?.remitente),
+        destinataria: limpiarNombre(nombres?.destinataria),
+      })
+    );
     return true;
   } catch {
     return false;

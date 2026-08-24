@@ -45,6 +45,7 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
    se va anotando y la app arma sola el texto de la carta, listo para copiar y mandar.
    La partida se guarda sola (una partida por correspondencia dura semanas), se puede
    deshacer la última jugada, y empezar de nuevo pide confirmación antes de borrar.
+   Los nombres de quien escribe y quien recibe se cargan ahí mismo y quedan guardados.
 5. **Consejos** — carrusel de seis tips estratégicos básicos.
 
 ## Decisiones de diseño (y por qué)
@@ -56,6 +57,8 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
 | Progresión en niveles numerados                            | Es una secuencia real de aprendizaje (ubicar → conocer → mover → escribir → estrategia), no una decoración.                 |
 | Peones promocionan siempre a Dama, sin preguntar           | Cubre el caso habitual sin sumar un selector de piezas que complicaría la interfaz a esta edad.                             |
 | La carta es copiable con un botón                          | Lo que se practica en el nivel 4 es literalmente lo que se manda. La herramienta conecta con el uso real.                   |
+| Los nombres se cargan desde la app, no están en el código  | Doble motivo: no deja nombres de menores en un repositorio público, y la app queda usable por cualquier familia.            |
+| El saludo de la carta es neutro ("¡Hola Ana!")             | Los nombres los pone quien usa la app, así que no se puede asumir a quién le escribe.                                       |
 
 **Paleta y tipografía** están definidas como tokens al principio de `src/App.jsx`:
 papel verde agua `#EAF2F0`, tablero crema `#F5ECD9` y verde azulado `#2A6F77`, acentos
@@ -93,11 +96,11 @@ src/
   main.jsx               Monta React en el DOM
   index.css              Tailwind + reset mínimo
   App.jsx                Interfaz: tokens visuales, contenido y los 5 niveles
+  carta.js               Texto de la carta y limpieza de nombres (sin React)
   storage.js             Guardado en localStorage, con validación de lo que se lee
   chess/engine.js        Motor de movimientos (sin React)
   chess/notation.js      Notación algebraica española (sin React)
-  chess/*.test.js        Tests — se corren con `npm test`
-  storage.test.js
+  *.test.js              Tests — se corren con `npm test`
 ```
 
 La regla de la división: **lo que no depende de React vive afuera de `App.jsx`**, porque
@@ -109,6 +112,7 @@ eso es lo que se puede testear sin levantar un navegador.
   a la jugada, porque necesita ver las otras piezas para desambiguar.
 - `leerPartida()` / `guardarPartida()` — persistencia. Todo lo que entra se valida: un
   guardado corrupto se descarta y se borra, así no deja la app rota en cada recarga.
+- `textoCarta(log, nombres)` — arma la carta que se copia y se manda.
 - `PIECE_INFO` y `TIPS` en `App.jsx` — todo el contenido de texto está centralizado ahí.
   Para sumar o corregir contenido no hace falta tocar la UI.
 

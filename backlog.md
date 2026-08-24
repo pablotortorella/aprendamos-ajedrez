@@ -23,19 +23,16 @@ lugar, no se renumera el resto.
   de nuevo" ahora pide confirmación.
 - **~~3. Deshacer la última jugada~~** — botón de deshacer un paso, que sobrevive a
   recargar. El rebobinado completo quedó como idea aparte (punto 24).
+- **~~4. Sacar los nombres del código~~** — quien escribe y quien recibe se cargan desde
+  la app y se guardan. No queda ningún nombre de menores en el código. El saludo de la
+  carta pasó a ser neutro ("¡Hola Ana!" en vez de "Querida Ana"), porque los nombres los
+  pone quien usa la app y no se sabe a quién le escribe.
+- **~~12a. Doble punteo en el nivel 1~~** — durante la animación de acierto se podían
+  sumar varios puntos con la misma casilla. El tablero ahora ignora los toques mientras
+  festeja, la pista dorada se deriva de los errores en vez de ser estado aparte, y los
+  temporizadores se cancelan al cambiar de nivel.
 
----
-
-## P0 — Rompe la promesa del producto
-
-### 4. Sacar los nombres del código
-
-`Paulina` y `Celeste` están hardcodeados en el texto de la carta. Son nenas de 6 años y
-el repositorio es público.
-
-- Mover a una pantalla de configuración simple (o un `config.js`) los nombres de quien
-  escribe y quien recibe.
-- Beneficio doble: privacidad, y la app queda reutilizable por cualquier otra familia.
+**Los cuatro P0 están cerrados.**
 
 ---
 
@@ -109,14 +106,12 @@ componentes React: hoy esa parte se verifica a mano en el navegador.
 
 ### 12. Bugs técnicos concretos ya detectados
 
-- **`Level1`**: `setReveal(true)` se llama **dentro** del updater de `setMisses`. Los
-  updaters de estado deben ser puros; en `StrictMode` React los ejecuta dos veces en
-  desarrollo. Mover ese efecto afuera.
-- **`Level1`**: durante los 700 ms de la animación de acierto se puede volver a tocar la
-  casilla correcta y sumar puntos repetidos. Bloquear la entrada mientras hay feedback
-  activo.
-- **`Level1`**: los `setTimeout` no se limpian al desmontar. Si se cambia de nivel justo
-  después de responder, queda un `setState` huérfano. Usar `useEffect` con cleanup.
+- ~~**`Level1`**: `setReveal(true)` dentro del updater de `setMisses`.~~ Resuelto: la
+  pista dorada ya no es estado, se deriva de `misses >= 2`.
+- ~~**`Level1`**: se podían sumar puntos repetidos tocando la casilla correcta durante la
+  animación.~~ Resuelto: el tablero ignora los toques mientras muestra el acierto.
+- ~~**`Level1`**: los `setTimeout` no se limpiaban al desmontar.~~ Resuelto: un solo
+  temporizador a la vez, cancelado al desmontar.
 - ~~**`Level4`**: `copy[copy.length - 1]` asumía que ya existía una entrada de las
   blancas.~~ Resuelto al guardar la partida: ahora `agregarJugada` anota `"…"` si llegara
   una jugada de negras con el historial vacío.

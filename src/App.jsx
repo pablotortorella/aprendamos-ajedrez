@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   algebraic,
   cloneBoard,
@@ -9,11 +9,19 @@ import {
   pieceType,
 } from "./chess/engine.js";
 import { moveNotation, PIECE_LETTERS } from "./chess/notation.js";
-import { guardarPartida, guardarPuntos, leerPartida, leerPuntos } from "./storage.js";
+import {
+  guardarNombres,
+  guardarPartida,
+  guardarPuntos,
+  leerNombres,
+  leerPartida,
+  leerPuntos,
+} from "./storage.js";
+import { recortarMientrasEscribe, textoCarta } from "./carta.js";
 
 /* ============ Paleta y tipografía ============
    Tema: "Cartero de Ajedrez" — inspirado en la partida por correspondencia
-   real de Celeste con Paulina. Tablero tipo sello postal, acentos dorados
+   por correspondencia que le da origen. Tablero tipo sello postal, acentos dorados
    de estampilla, y una "carta" que se puede copiar y mandar de verdad. */
 
 const COLORS = {
@@ -114,7 +122,7 @@ const TIPS = [
   },
   {
     emoji: "🐢",
-    titulo: "Pensá tranquila, no hay apuro",
+    titulo: "Pensá con calma, no hay apuro",
     texto:
       "Como juegan por correspondencia, tenés todo el tiempo del mundo. Mirá bien el tablero antes de escribir tu jugada en la carta.",
   },
@@ -254,40 +262,60 @@ function Level1() {
   const [flashSquare, setFlashSquare] = useState(null);
   const [score, setScore] = useState(leerPuntos);
   const [misses, setMisses] = useState(0);
-  const [reveal, setReveal] = useState(false);
+  const temporizador = useRef(null);
+
+  // La pista dorada no es un estado aparte: es simplemente "ya erró dos veces".
+  // Derivarlo evita que pueda quedar desincronizado de los errores.
+  const reveal = misses >= 2;
 
   // El puntaje sobrevive a recargar la página.
   useEffect(() => {
     guardarPuntos(score);
   }, [score]);
 
+  /** Un solo temporizador a la vez; el anterior se cancela. */
+  const programar = useCallback((fn, ms) => {
+    if (temporizador.current) clearTimeout(temporizador.current);
+    temporizador.current = setTimeout(() => {
+      temporizador.current = null;
+      fn();
+    }, ms);
+  }, []);
+
+  // Si se cambia de nivel con un temporizador pendiente, hay que cancelarlo.
+  useEffect(() => {
+    return () => {
+      if (temporizador.current) clearTimeout(temporizador.current);
+    };
+  }, []);
+
   const newTarget = useCallback(() => {
     setTarget({ row: Math.floor(Math.random() * 8), col: Math.floor(Math.random() * 8) });
     setFeedback(null);
     setFlashSquare(null);
     setMisses(0);
-    setReveal(false);
   }, []);
 
   const handleClick = (row, col) => {
+    // Mientras se festeja el acierto el tablero no acepta más toques: si no,
+    // volver a tocar la casilla correcta sumaba un punto por cada toque.
+    if (feedback === "bien") return;
+
     if (row === target.row && col === target.col) {
       setFeedback("bien");
       setFlashSquare({ row, col, result: "bien" });
       setScore((s) => s + 1);
-      setTimeout(newTarget, 700);
-    } else {
-      setFeedback("mal");
-      setFlashSquare({ row, col, result: "mal" });
-      setMisses((m) => {
-        const next = m + 1;
-        if (next >= 2) setReveal(true);
-        return next;
-      });
-      setTimeout(() => {
-        setFlashSquare(null);
-        setFeedback(null);
-      }, 500);
+      programar(newTarget, 700);
+      return;
     }
+
+    setFeedback("mal");
+    setFlashSquare({ row, col, result: "mal" });
+    setMisses((m) => m + 1);
+    programar(() => {
+      setFlashSquare(null);
+      setFeedback(null);
+    }, 500);
   };
 
   return (
@@ -485,7 +513,7 @@ function agregarJugada(log, turn, notation) {
   return copia;
 }
 
-function Level4() {
+function Level4({ nombres, onCambiarNombres }) {
   // Tablero, turno, jugadas y la posición anterior van en un solo estado: así
   // guardar y deshacer son operaciones atómicas, sin riesgo de que queden
   // desincronizados entre sí.
@@ -573,10 +601,7 @@ function Level4() {
     }
   };
 
-  const cartaTexto = useMemo(() => {
-    const lines = log.map((m) => `${m.number}. ${m.white}${m.black ? "  " + m.black : ""}`);
-    return `Querida Paulina,\nAcá van mis jugadas:\n\n${lines.join("\n")}\n\n¡Espero tu respuesta!\nCariños, Celeste`;
-  }, [log]);
+  const cartaTexto = useMemo(() => textoCarta(log, nombres), [log, nombres]);
 
   const copiar = async () => {
     try {
@@ -662,8 +687,41 @@ function Level4() {
         className="rounded-2xl p-4 w-full lg:w-72 shadow-md"
       >
         <p style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="text-sm font-bold mb-2 not-italic">
-          ✉️ Tu carta para Paulina
+          ✉️ Tu carta{nombres.destinataria ? ` para ${nombres.destinataria}` : ""}
         </p>
+
+        <div className="flex flex-col gap-1.5 mb-3 not-italic">
+          <label style={{ fontFamily: "Nunito" }} className="flex flex-col gap-0.5">
+            <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
+              ¿A quién le escribís?
+            </span>
+            <input
+              type="text"
+              value={nombres.destinataria}
+              onChange={(e) =>
+                onCambiarNombres({ ...nombres, destinataria: recortarMientrasEscribe(e.target.value) })
+              }
+              placeholder="Su nombre"
+              style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
+              className="rounded-lg px-2 py-1 text-xs w-full"
+            />
+          </label>
+          <label style={{ fontFamily: "Nunito" }} className="flex flex-col gap-0.5">
+            <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
+              ¿Quién escribe?
+            </span>
+            <input
+              type="text"
+              value={nombres.remitente}
+              onChange={(e) =>
+                onCambiarNombres({ ...nombres, remitente: recortarMientrasEscribe(e.target.value) })
+              }
+              placeholder="Tu nombre"
+              style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
+              className="rounded-lg px-2 py-1 text-xs w-full"
+            />
+          </label>
+        </div>
         <pre
           style={{ fontFamily: "Caveat", fontSize: "1.15rem", whiteSpace: "pre-wrap", color: COLORS.ink }}
           className="min-h-[120px] leading-snug"
@@ -751,6 +809,12 @@ function LevelTip() {
 
 export default function App() {
   const [level, setLevel] = useState(1);
+  // Los nombres viven acá porque los usan la carta y el encabezado.
+  const [nombres, setNombres] = useState(leerNombres);
+
+  useEffect(() => {
+    guardarNombres(nombres);
+  }, [nombres]);
 
   return (
     <div style={{ background: COLORS.paper, minHeight: "100vh", fontFamily: "Nunito" }} className="p-4 sm:p-6">
@@ -764,7 +828,9 @@ export default function App() {
           </h1>
         </div>
         <p style={{ color: COLORS.inkSoft }} className="text-sm mt-1">
-          Aprendé a nombrar las jugadas para escribirle a Paulina y Alejo
+          {nombres.destinataria
+            ? `Aprendé a nombrar las jugadas para escribirle a ${nombres.destinataria}`
+            : "Aprendé a nombrar las jugadas para escribirle a quien juega con vos"}
         </p>
       </header>
 
@@ -783,7 +849,7 @@ export default function App() {
         {level === 1 && <Level1 />}
         {level === 2 && <Level2 />}
         {level === 3 && <Level3 />}
-        {level === 4 && <Level4 />}
+        {level === 4 && <Level4 nombres={nombres} onCambiarNombres={setNombres} />}
         {level === 5 && <LevelTip />}
       </main>
 

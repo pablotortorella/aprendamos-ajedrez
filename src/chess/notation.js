@@ -1,7 +1,7 @@
 /* ============ Notación algebraica española ============
-   Traduce un movimiento a texto: el formato que Celeste manda por carta.
-   Usa las letras españolas (C, A, T, D, R), que son las que comparte con la
-   familia de Paulina. Funciones puras: dependen sólo del tablero que reciben. */
+   Traduce un movimiento a texto: el formato que se manda por carta.
+   Usa las letras españolas (C, A, T, D, R), que son las que se comparten por
+   escrito. Funciones puras: dependen sólo del tablero que reciben. */
 
 import { FILES, algebraic, generateMoves, isWhite, pieceType } from "./engine.js";
 

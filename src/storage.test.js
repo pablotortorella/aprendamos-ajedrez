@@ -4,8 +4,10 @@ import {
   borrarPartida,
   esPartidaValida,
   esTableroValido,
+  guardarNombres,
   guardarPartida,
   guardarPuntos,
+  leerNombres,
   leerPartida,
   leerPuntos,
 } from "./storage.js";
@@ -141,6 +143,50 @@ describe("cuando el navegador no deja guardar", () => {
     globalThis.localStorage = fakeStorage({ romperAlLeer: true });
     expect(leerPartida()).toBe(null);
     expect(leerPuntos()).toBe(0);
+  });
+});
+
+describe("nombres", () => {
+  it("guarda y lee los dos nombres", () => {
+    guardarNombres({ remitente: "Ana", destinataria: "Sofi" });
+    expect(leerNombres()).toEqual({ remitente: "Ana", destinataria: "Sofi" });
+  });
+
+  it("sin nada guardado devuelve dos vacíos, no undefined", () => {
+    expect(leerNombres()).toEqual({ remitente: "", destinataria: "" });
+  });
+
+  it("los limpia al guardar", () => {
+    guardarNombres({ remitente: "  Ana\nMaría  ", destinataria: "Sofi " });
+    expect(leerNombres()).toEqual({ remitente: "Ana María", destinataria: "Sofi" });
+  });
+
+  it("con JSON roto devuelve vacíos en vez de romper", () => {
+    globalThis.localStorage.setItem("cartero-ajedrez:nombres", "{roto");
+    expect(leerNombres()).toEqual({ remitente: "", destinataria: "" });
+  });
+
+  it("con un formato inesperado devuelve vacíos", () => {
+    globalThis.localStorage.setItem("cartero-ajedrez:nombres", JSON.stringify(["Ana", "Sofi"]));
+    expect(leerNombres()).toEqual({ remitente: "", destinataria: "" });
+  });
+
+  it("con campos que no son texto devuelve vacíos", () => {
+    globalThis.localStorage.setItem(
+      "cartero-ajedrez:nombres",
+      JSON.stringify({ remitente: 42, destinataria: { a: 1 } })
+    );
+    expect(leerNombres()).toEqual({ remitente: "", destinataria: "" });
+  });
+
+  it("sin localStorage devuelve vacíos sin romper", () => {
+    globalThis.localStorage = undefined;
+    expect(leerNombres()).toEqual({ remitente: "", destinataria: "" });
+    expect(guardarNombres({ remitente: "Ana" })).toBe(false);
+  });
+
+  it("guardar sin argumentos no rompe", () => {
+    expect(() => guardarNombres(undefined)).not.toThrow();
   });
 });
 
