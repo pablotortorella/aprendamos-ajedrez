@@ -104,6 +104,17 @@ lugar, no se renumera el resto.
   no expresa bien un color que cambia en tiempo de ejecución sin lógica extra de por medio,
   así que ahí `theme.js` sigue siendo la fuente de verdad. Verificado con capturas antes y
   después en los 5 niveles: pixel a pixel, sin cambios visuales.
+- **~~16. Contraste de las piezas blancas~~** — el glyph blanco ya no se deja sin colorear
+  (con lo cual heredaba el mismo negro/tinta oscura que las piezas negras y ambas se veían
+  casi del mismo color): ahora lleva `color: #FFFFFF` + `-webkit-text-stroke: 1.5px`
+  en el teal oscuro, en `components/Board.jsx`, sólo para las piezas blancas. Se probó
+  antes con `text-shadow` de pocos px como sugería este mismo punto, pero a los tamaños de
+  fuente del tablero el trazo salía demasiado sutil para notarse; el `text-stroke` de
+  ancho fijo da un borde parejo sin importar el tamaño.
+- **~~17. No comunicar sólo por color~~** — el flash verde/rojo del nivel 1 ahora suma un
+  ✓ o una ✗ (blancos, con sombra para leerse sobre cualquiera de los dos colores) encima
+  de la casilla, en `components/Board.jsx`. Mismo criterio en éxito y en error, sin tocar
+  la lógica del nivel 1.
 
 **Los cuatro P0 están cerrados.**
 
@@ -146,19 +157,6 @@ de pantalla no las anuncia.
 
 - Convertirlas en `<button>` con `aria-label` (`"casilla e4, peón blanco"`).
 - Lo mismo con los puntitos del carrusel del nivel 5, que también son `<span onClick>`.
-
-### 16. Contraste de las piezas blancas
-
-Los glyphs Unicode blancos (♙♘♗) son de contorno: sobre las casillas crema casi no se
-distinguen. Se nota en cuanto se mira el tablero.
-
-- Usar el glyph relleno con `color` blanco y un borde oscuro vía `text-shadow`, o pasar a
-  piezas SVG (que además escalan mejor y permiten animarlas).
-
-### 17. No comunicar sólo por color
-
-El feedback del nivel 1 es verde/rojo. Sumar un ícono (✓ / ✗) para que funcione también
-con daltonismo.
 
 ---
 
