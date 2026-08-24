@@ -4,7 +4,11 @@ import {
   applyMove,
   createEmptyBoard,
   createInitialBoard,
+  findKing,
+  generateLegalMoves,
   generateMoves,
+  hasAnyLegalMoves,
+  isInCheck,
   isWhite,
 } from "./chess/engine.js";
 import { moveNotation, parseMove, resolveMove, PIECE_LETTERS } from "./chess/notation.js";
@@ -145,7 +149,7 @@ const pieceGlyph = (piece) => {
 
 /* ============ Sub-componentes visuales ============ */
 
-function Square({ dark, children, onClick, highlight, capture, selected, coordLabel, flash, correctReveal }) {
+function Square({ dark, children, onClick, highlight, capture, selected, coordLabel, flash, correctReveal, inCheck }) {
   return (
     <div
       onClick={onClick}
@@ -179,6 +183,12 @@ function Square({ dark, children, onClick, highlight, capture, selected, coordLa
           className="absolute inset-1 rounded-md"
         />
       )}
+      {inCheck && (
+        <div
+          style={{ border: `4px solid ${COLORS.coral}`, opacity: 0.9 }}
+          className="absolute inset-1 rounded-md animate-pulse"
+        />
+      )}
       {coordLabel && (
         <span
           style={{ color: dark ? COLORS.goldSoft : COLORS.teal, fontFamily: "Nunito" }}
@@ -201,6 +211,7 @@ function Board({
   flashSquare,
   revealSquare,
   flipped = false,
+  checkSquare,
 }) {
   return (
     <div
@@ -218,6 +229,7 @@ function Board({
           const move = legalMoves?.find((m) => m.row === row && m.col === col);
           const isFlash = flashSquare && flashSquare.row === row && flashSquare.col === col;
           const isReveal = revealSquare && revealSquare.row === row && revealSquare.col === col;
+          const isCheck = checkSquare && checkSquare.row === row && checkSquare.col === col;
           return (
             <Square
               key={`${row}-${col}`}
@@ -229,6 +241,7 @@ function Board({
               onClick={onSquareClick ? () => onSquareClick(row, col) : undefined}
               flash={isFlash ? flashSquare.result : null}
               correctReveal={isReveal}
+              inCheck={isCheck}
             >
               <span className={pieceSize} style={{ lineHeight: 1 }}>
                 {pieceGlyph(piece)}
@@ -519,6 +532,18 @@ function agregarJugada(log, turn, notation) {
 }
 
 /**
+ * Escribe la notación de una jugada ya aplicada, agregando "+" o "#" según
+ * si deja al rival en jaque o en jaque mate. Un solo lugar para esta lógica:
+ * la usan tanto el click en el tablero como la reconstrucción de una carta.
+ */
+function notarJugada(boardPrevio, fromRow, fromCol, toRow, toCol, boardNuevo, turnQueMueve, opciones) {
+  const rivalEsBlanco = turnQueMueve !== "w";
+  const check = isInCheck(boardNuevo, rivalEsBlanco);
+  const checkmate = check && !hasAnyLegalMoves(boardNuevo, rivalEsBlanco);
+  return moveNotation(boardPrevio, fromRow, fromCol, toRow, toCol, { ...opciones, check, checkmate });
+}
+
+/**
  * Reconstruye una partida a partir de un texto pegado (la carta entera, o
  * sólo la lista de jugadas): arranca de la posición inicial y aplica cada
  * jugada en orden, la misma forma en que se jugarían a mano.
@@ -550,7 +575,7 @@ function reconstruirPartida(texto) {
         return { error: `No pude entender la jugada "${texto}" (número ${jugada.number}).` };
       }
       const { board: newBoard, promoted } = applyMove(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol);
-      const notation = moveNotation(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol, {
+      const notation = notarJugada(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol, newBoard, turn, {
         capture: parsed.capture,
         promoted,
       });
@@ -579,6 +604,18 @@ function Level4({ nombres, onCambiarNombres }) {
   const [confirmandoSubida, setConfirmandoSubida] = useState(false);
 
   const { board, turn, log } = partida;
+
+  // Se derivan del tablero en cada render, no se guardan como estado aparte:
+  // así nunca pueden quedar desincronizados de la posición real.
+  const enJaque = useMemo(() => isInCheck(board, turn === "w"), [board, turn]);
+  const enJaqueMate = useMemo(
+    () => enJaque && !hasAnyLegalMoves(board, turn === "w"),
+    [board, turn, enJaque]
+  );
+  const casillaDeJaque = useMemo(
+    () => (enJaque ? findKing(board, turn === "w") : null),
+    [board, turn, enJaque]
+  );
 
   // Una partida por correspondencia dura semanas: recargar no puede borrarla.
   useEffect(() => {
@@ -638,7 +675,7 @@ function Level4({ nombres, onCambiarNombres }) {
         const { board: newBoard, promoted } = applyMove(board, selected.row, selected.col, row, col);
         // Se escribe con el tablero PREVIO: la desambiguación necesita ver
         // dónde estaban las otras piezas antes de mover.
-        const notation = moveNotation(board, selected.row, selected.col, row, col, {
+        const notation = notarJugada(board, selected.row, selected.col, row, col, newBoard, turn, {
           capture: m.capture,
           promoted,
         });
@@ -658,7 +695,7 @@ function Level4({ nombres, onCambiarNombres }) {
       // clicking another own piece re-selects
       if (piece && isWhite(piece) === (turn === "w")) {
         setSelected({ row, col });
-        setMoves(generateMoves(board, row, col));
+        setMoves(generateLegalMoves(board, row, col));
         return;
       }
       limpiarSeleccion();
@@ -666,7 +703,7 @@ function Level4({ nombres, onCambiarNombres }) {
     }
     if (piece && isWhite(piece) === (turn === "w")) {
       setSelected({ row, col });
-      setMoves(generateMoves(board, row, col));
+      setMoves(generateLegalMoves(board, row, col));
     }
   };
 
@@ -687,6 +724,11 @@ function Level4({ nombres, onCambiarNombres }) {
         <div className="flex items-center gap-2">
           <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="font-bold text-sm">
             Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
+            {enJaqueMate ? (
+              <span style={{ color: COLORS.coral }}> · ¡Jaque mate! 🏆</span>
+            ) : enJaque ? (
+              <span style={{ color: COLORS.coral }}> · ¡Jaque! ⚠️</span>
+            ) : null}
           </div>
           <button
             onClick={() => setFlipped((f) => !f)}
@@ -703,7 +745,14 @@ function Level4({ nombres, onCambiarNombres }) {
             🔄
           </button>
         </div>
-        <Board board={board} onSquareClick={handleClick} selectedSquare={selected} legalMoves={moves} flipped={flipped} />
+        <Board
+          board={board}
+          onSquareClick={handleClick}
+          selectedSquare={selected}
+          legalMoves={moves}
+          flipped={flipped}
+          checkSquare={casillaDeJaque}
+        />
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
