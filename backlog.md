@@ -48,6 +48,17 @@ lugar, no se renumera el resto.
 - **Publicar en GitHub Pages** — deploy automático por GitHub Actions
   (`.github/workflows/deploy.yml`) en cada push a `main`, en
   https://pablotortorella.github.io/aprendamos-ajedrez/
+- **Reordenar los niveles 1 y 2 del menú** — "Conocé piezas" pasó a ser el primer nivel y
+  "Ubicá casillas" el segundo (antes era al revés). Sólo cambia el orden del menú; el
+  contenido de cada nivel es el mismo de siempre.
+- **Autoría en el pie de página** — nombre de Pablo Tortorella, "en colaboración con
+  Claude Code", la licencia (GPL-3.0) y un link al repositorio en GitHub.
+- **Bug: el tablero se agrandaba al tocar "Empezar de nuevo"** — el aviso de confirmación
+  ("¿Seguro?... Sí, borrar / No") iba en una sola fila más ancha que los controles
+  normales, y al compartir con el tablero la misma columna de ancho automático, lo
+  estiraba con ella (326px → 434px medido en un viewport de escritorio). Se solucionó
+  poniendo el aviso y los botones en líneas separadas, así nunca es lo más ancho de esa
+  columna. Reportado por Pablo tras probar el nivel 4 en su compu.
 
 **Los cuatro P0 están cerrados.**
 
