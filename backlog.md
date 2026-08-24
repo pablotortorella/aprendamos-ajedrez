@@ -79,6 +79,31 @@ lugar, no se renumera el resto.
   en los 5 niveles además de tests y build. De paso, el README (que nunca se había
   actualizado desde el clon inicial) quedó al día: ya no dice "no hay detección de jaque"
   ni "movimientos pseudo-legales", que habían quedado desactualizados desde el punto 7.
+- **~~10. Tests de los componentes~~** — `@testing-library/react` + `jsdom`, sólo para los
+  archivos que lo piden (`// @vitest-environment jsdom` por archivo; el resto sigue en
+  `node`, más rápido). `levels/Level4.test.jsx` cubre jugar, deshacer, empezar de nuevo
+  (confirmado y cancelado), que la partida guardada se recupera al montar, y el fallback de
+  copiar la carta (punto 12). 7 tests nuevos, 153 en total.
+- **~~12. Bugs técnicos concretos ya detectados~~** — el último bug de la lista ("Copiar
+  la carta" fallaba en silencio) quedó resuelto: ahora avisa y deja el texto de la carta
+  seleccionado automáticamente, para que alcance con Ctrl+C. Con éste, los cinco bugs que
+  tenía esta lista ya están cerrados.
+- **~~13. Fuentes~~** — auto-hospedadas con `@fontsource` (subset `latin`, alcanza para
+  español), importadas en `main.jsx`: la app ya no depende de Google Fonts por internet.
+  De paso salió un bug real, anterior a esta sesión: `fontFamily: "Baloo 2"` sin comillas
+  es CSS inválido (el "2" no es un identificador válido), así que el navegador la
+  descartaba en silencio y todo lo que debía verse en Baloo 2 se veía en Nunito heredado
+  — desde el primer commit del proyecto. Se agregó `FONTS` en `theme.js` (con las
+  comillas puestas) y se reemplazaron los 20 usos sueltos, en toda la app.
+- **~~14. Tokens de color como tema de Tailwind~~** — `@theme` en `index.css` define la
+  paleta como `--color-cartero-*` (prefijo a propósito, para no pisar la escala
+  incorporada de Tailwind), generando clases como `bg-cartero-teal-dark`. Se aplicó a los
+  colores que son siempre fijos (bordes, fondos que no dependen de estado) en `App.jsx`,
+  `components/Board.jsx` y `levels/LevelTip.jsx`. Los colores condicionales (por ejemplo
+  `activo ? COLORS.teal : COLORS.paperCard`) se dejaron en `theme.js` a propósito: Tailwind
+  no expresa bien un color que cambia en tiempo de ejecución sin lógica extra de por medio,
+  así que ahí `theme.js` sigue siendo la fuente de verdad. Verificado con capturas antes y
+  después en los 5 niveles: pixel a pixel, sin cambios visuales.
 
 **Los cuatro P0 están cerrados.**
 
@@ -105,42 +130,8 @@ punto 6 — sin la capa de "lección" encima.
 
 Nada de esto se ve, pero sin esto cada cambio nuevo cuesta más que el anterior.
 
-### 10. Tests de los componentes
-
-El motor, la notación y el guardado ya tienen tests (`npm test`). Lo que no tiene son los
-componentes React: hoy esa parte se verifica a mano en el navegador.
-
-- Sumar `@testing-library/react` y cubrir el flujo del nivel 4 (jugar, deshacer, reiniciar).
-- Un test que valide que la partida guardada se recupera al montar el componente.
-
-### 12. Bugs técnicos concretos ya detectados
-
-- ~~**`Level1`**: `setReveal(true)` dentro del updater de `setMisses`.~~ Resuelto: la
-  pista dorada ya no es estado, se deriva de `misses >= 2`.
-- ~~**`Level1`**: se podían sumar puntos repetidos tocando la casilla correcta durante la
-  animación.~~ Resuelto: el tablero ignora los toques mientras muestra el acierto.
-- ~~**`Level1`**: los `setTimeout` no se limpiaban al desmontar.~~ Resuelto: un solo
-  temporizador a la vez, cancelado al desmontar.
-- ~~**`Level4`**: `copy[copy.length - 1]` asumía que ya existía una entrada de las
-  blancas.~~ Resuelto al guardar la partida: ahora `agregarJugada` anota `"…"` si llegara
-  una jugada de negras con el historial vacío.
-- **Copiar la carta**: si `navigator.clipboard` falla (contexto no seguro, permisos), el
-  `catch` sólo hace `setCopied(false)` y no pasa nada visible. Hay que mostrar un mensaje
-  y ofrecer el texto seleccionable como alternativa.
-
-### 13. Fuentes
-
-Se importan con `@import` dentro de un `<style>` inyectado en el body. Funciona, pero es
-la ruta más lenta y depende de tener internet.
-
-- Moverlas a `index.html` con `preconnect`, o
-- Auto-hospedarlas (`@fontsource`) para que la app ande sin conexión.
-
-### 14. Tokens de color como tema de Tailwind
-
-Hoy conviven `style={{}}` inline con clases de Tailwind, así que la paleta vive en dos
-lugares. Tailwind 4 permite declarar los colores con `@theme` en `index.css` y usarlos
-como `bg-tablero-oscuro`. Menos ruido en el JSX y un solo lugar donde cambiar la paleta.
+Por ahora está vacío: todo lo que había acá (#10, #12, #13, #14) ya está hecho — ver la
+sección "✅ Hecho" al principio del archivo.
 
 ---
 
