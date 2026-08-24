@@ -1,4 +1,14 @@
 import React, { useState, useMemo, useCallback } from "react";
+import {
+  algebraic,
+  cloneBoard,
+  createEmptyBoard,
+  createInitialBoard,
+  generateMoves,
+  isWhite,
+  pieceType,
+} from "./chess/engine.js";
+import { moveNotation, PIECE_LETTERS } from "./chess/notation.js";
 
 /* ============ Paleta y tipografía ============
    Tema: "Cartero de Ajedrez" — inspirado en la partida por correspondencia
@@ -23,13 +33,12 @@ const COLORS = {
 const FONT_IMPORT =
   "@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Caveat:wght@600;700&display=swap');";
 
-const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const algebraic = (row, col) => `${FILES[col]}${8 - row}`;
-
+/* Los textos de las piezas. Las letras de notación vienen de chess/notation.js
+   para que haya un solo lugar donde estén definidas. */
 const PIECE_INFO = {
   P: {
     name: "Peón",
-    letter: "",
+    letter: PIECE_LETTERS.P,
     desc: "Camina derecho, come en diagonal. ¡Es lento pero de a muchos!",
     value: "1 punto",
     funFact: "Si un peón llega hasta el final del tablero, ¡se transforma en otra pieza! Casi siempre en Dama.",
@@ -37,7 +46,7 @@ const PIECE_INFO = {
   },
   N: {
     name: "Caballo",
-    letter: "C",
+    letter: PIECE_LETTERS.N,
     desc: "Salta en forma de L. Es el único que salta sobre otras piezas.",
     value: "3 puntos",
     funFact: "Es la única pieza que puede moverse al principio de la partida sin que nadie le abra camino.",
@@ -45,7 +54,7 @@ const PIECE_INFO = {
   },
   B: {
     name: "Alfil",
-    letter: "A",
+    letter: PIECE_LETTERS.B,
     desc: "Se mueve en diagonal, siempre por el mismo color de casilla.",
     value: "3 puntos",
     funFact: "Cada jugador tiene un alfil de casillas claras y otro de casillas oscuras, ¡y nunca cambian de color!",
@@ -53,7 +62,7 @@ const PIECE_INFO = {
   },
   R: {
     name: "Torre",
-    letter: "T",
+    letter: PIECE_LETTERS.R,
     desc: "Se mueve en línea recta: adelante, atrás o al costado.",
     value: "5 puntos",
     funFact: "Empieza encerrada en la esquina, pero cuando el tablero se abre se vuelve durísima de enfrentar.",
@@ -61,7 +70,7 @@ const PIECE_INFO = {
   },
   Q: {
     name: "Dama",
-    letter: "D",
+    letter: PIECE_LETTERS.Q,
     desc: "La más poderosa: combina Torre + Alfil.",
     value: "9 puntos",
     funFact: "Es la pieza más fuerte, ¡pero perderla no significa perder la partida! Solo el Rey es insustituible.",
@@ -69,7 +78,7 @@ const PIECE_INFO = {
   },
   K: {
     name: "Rey",
-    letter: "R",
+    letter: PIECE_LETTERS.K,
     desc: "Un paso para cualquier lado. ¡Hay que cuidarlo siempre!",
     value: "No tiene puntos",
     funFact: "No se compara en puntos con las demás piezas: si lo atrapan (jaque mate), se termina la partida.",
@@ -125,115 +134,6 @@ const pieceGlyph = (piece) => {
   const color = isWhite(piece) ? "w" : "b";
   return UNICODE[color + piece.toUpperCase()];
 };
-
-function isWhite(piece) {
-  return piece === piece.toUpperCase();
-}
-function pieceType(piece) {
-  return piece.toUpperCase();
-}
-
-function createInitialBoard() {
-  const back = ["R", "N", "B", "Q", "K", "B", "N", "R"];
-  const board = Array.from({ length: 8 }, () => Array(8).fill(null));
-  for (let c = 0; c < 8; c++) {
-    board[0][c] = back[c].toLowerCase();
-    board[1][c] = "p";
-    board[6][c] = "P";
-    board[7][c] = back[c];
-  }
-  return board;
-}
-
-function cloneBoard(board) {
-  return board.map((row) => row.slice());
-}
-
-function slide(board, row, col, white, directions) {
-  const moves = [];
-  for (const [dr, dc] of directions) {
-    let r = row + dr,
-      c = col + dc;
-    while (r >= 0 && r < 8 && c >= 0 && c < 8) {
-      const target = board[r][c];
-      if (!target) {
-        moves.push({ row: r, col: c, capture: false });
-      } else {
-        if (isWhite(target) !== white) moves.push({ row: r, col: c, capture: true });
-        break;
-      }
-      r += dr;
-      c += dc;
-    }
-  }
-  return moves;
-}
-
-function stepMoves(board, row, col, white, offsets) {
-  const moves = [];
-  for (const [dr, dc] of offsets) {
-    const r = row + dr,
-      c = col + dc;
-    if (r < 0 || r > 7 || c < 0 || c > 7) continue;
-    const target = board[r][c];
-    if (!target || isWhite(target) !== white) {
-      moves.push({ row: r, col: c, capture: !!target });
-    }
-  }
-  return moves;
-}
-
-const DIAG = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
-const ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-const KNIGHT_OFFSETS = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
-const KING_OFFSETS = [...DIAG, ...ORTH];
-
-function generateMoves(board, row, col) {
-  const piece = board[row][col];
-  if (!piece) return [];
-  const white = isWhite(piece);
-  const type = pieceType(piece);
-
-  if (type === "P") {
-    const moves = [];
-    const dir = white ? -1 : 1;
-    const startRow = white ? 6 : 1;
-    const oneStep = row + dir;
-    if (oneStep >= 0 && oneStep < 8 && !board[oneStep][col]) {
-      moves.push({ row: oneStep, col, capture: false });
-      const twoStep = row + 2 * dir;
-      if (row === startRow && !board[twoStep][col]) {
-        moves.push({ row: twoStep, col, capture: false });
-      }
-    }
-    for (const dc of [-1, 1]) {
-      const nc = col + dc;
-      const nr = row + dir;
-      if (nr < 0 || nr > 7 || nc < 0 || nc > 7) continue;
-      const target = board[nr][nc];
-      if (target && isWhite(target) !== white) moves.push({ row: nr, col: nc, capture: true });
-    }
-    return moves;
-  }
-  if (type === "N") return stepMoves(board, row, col, white, KNIGHT_OFFSETS);
-  if (type === "K") return stepMoves(board, row, col, white, KING_OFFSETS);
-  if (type === "B") return slide(board, row, col, white, DIAG);
-  if (type === "R") return slide(board, row, col, white, ORTH);
-  if (type === "Q") return slide(board, row, col, white, [...DIAG, ...ORTH]);
-  return [];
-}
-
-function moveNotation(piece, fromRow, fromCol, toRow, toCol, capture, promoted) {
-  const type = pieceType(piece);
-  const dest = algebraic(toRow, toCol);
-  if (type === "P") {
-    let n = capture ? `${FILES[fromCol]}x${dest}` : dest;
-    if (promoted) n += "=D";
-    return n;
-  }
-  const letter = PIECE_INFO[type].letter;
-  return `${letter}${capture ? "x" : ""}${dest}`;
-}
 
 /* ============ Sub-componentes visuales ============ */
 
@@ -347,7 +247,7 @@ function LevelTab({ active, onClick, label, emoji }) {
 /* ============ Nivel 1: coordenadas ============ */
 
 function Level1() {
-  const emptyBoard = useMemo(() => Array.from({ length: 8 }, () => Array(8).fill(null)), []);
+  const emptyBoard = useMemo(() => createEmptyBoard(), []);
   const [target, setTarget] = useState(() => ({ row: Math.floor(Math.random() * 8), col: Math.floor(Math.random() * 8) }));
   const [feedback, setFeedback] = useState(null);
   const [flashSquare, setFlashSquare] = useState(null);
@@ -497,7 +397,7 @@ function Level3() {
   const [selected, setSelected] = useState("N");
   const origin = selected === "P" ? { row: 6, col: 3 } : { row: 3, col: 3 };
   const board = useMemo(() => {
-    const b = Array.from({ length: 8 }, () => Array(8).fill(null));
+    const b = createEmptyBoard();
     b[origin.row][origin.col] = selected;
     return b;
   }, [selected, origin.row, origin.col]);
@@ -507,7 +407,7 @@ function Level3() {
   const handleClick = (row, col) => {
     const m = moves.find((mv) => mv.row === row && mv.col === col);
     if (m) {
-      setDestNote(moveNotation(selected, origin.row, origin.col, row, col, false, false));
+      setDestNote(moveNotation(board, origin.row, origin.col, row, col));
     }
   };
 
@@ -587,7 +487,12 @@ function Level4() {
           promoted = true;
         }
         newBoard[row][col] = finalPiece;
-        const notation = moveNotation(movingPiece, selected.row, selected.col, row, col, m.capture, promoted);
+        // Se escribe con el tablero PREVIO: la desambiguación necesita ver
+        // dónde estaban las otras piezas antes de mover.
+        const notation = moveNotation(board, selected.row, selected.col, row, col, {
+          capture: m.capture,
+          promoted,
+        });
 
         setLog((prev) => {
           const copy = prev.slice();
