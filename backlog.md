@@ -59,6 +59,12 @@ lugar, no se renumera el resto.
   estiraba con ella (326px → 434px medido en un viewport de escritorio). Se solucionó
   poniendo el aviso y los botones en líneas separadas, así nunca es lo más ancho de esa
   columna. Reportado por Pablo tras probar el nivel 4 en su compu.
+- **Descargar el tablero como imagen** — botón 📷 junto al de girar tablero, en el nivel
+  "Escribí tu carta". Dibuja la posición actual en un `<canvas>` (`src/tableroImagen.js`)
+  y descarga un PNG, sin backend ni dependencias nuevas; respeta el giro del tablero. Las
+  piezas blancas llevan un trazo oscuro además del relleno para que se lean solas en la
+  imagen — el mismo glyph de contorno que el backlog #16 marca como bug en la UI en vivo,
+  resuelto acá porque una imagen ya mandada no se puede arreglar después.
 
 **Los cuatro P0 están cerrados.**
 
