@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   algebraic,
   cloneBoard,
@@ -9,6 +9,7 @@ import {
   pieceType,
 } from "./chess/engine.js";
 import { moveNotation, PIECE_LETTERS } from "./chess/notation.js";
+import { guardarPartida, guardarPuntos, leerPartida, leerPuntos } from "./storage.js";
 
 /* ============ Paleta y tipografía ============
    Tema: "Cartero de Ajedrez" — inspirado en la partida por correspondencia
@@ -251,9 +252,14 @@ function Level1() {
   const [target, setTarget] = useState(() => ({ row: Math.floor(Math.random() * 8), col: Math.floor(Math.random() * 8) }));
   const [feedback, setFeedback] = useState(null);
   const [flashSquare, setFlashSquare] = useState(null);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(leerPuntos);
   const [misses, setMisses] = useState(0);
   const [reveal, setReveal] = useState(false);
+
+  // El puntaje sobrevive a recargar la página.
+  useEffect(() => {
+    guardarPuntos(score);
+  }, [score]);
 
   const newTarget = useCallback(() => {
     setTarget({ row: Math.floor(Math.random() * 8), col: Math.floor(Math.random() * 8) });
@@ -454,21 +460,67 @@ function Level3() {
 
 /* ============ Nivel 4: escribí tu carta ============ */
 
+/** Una partida recién empezada, sin nada para deshacer. */
+function partidaNueva() {
+  return { board: createInitialBoard(), turn: "w", log: [], previous: null };
+}
+
+/**
+ * Agrega una jugada al historial de la carta.
+ *
+ * El caso raro: que jueguen las negras con el historial vacío. Hoy no debería
+ * pasar porque siempre empiezan las blancas, pero la partida se lee de
+ * localStorage y un dato viejo o corrupto podría llegar así. Antes eso rompía
+ * la app; ahora anota la jugada blanca desconocida como "…".
+ */
+function agregarJugada(log, turn, notation) {
+  const copia = log.slice();
+  if (turn === "w") {
+    copia.push({ number: copia.length + 1, white: notation, black: null });
+  } else if (copia.length === 0) {
+    copia.push({ number: 1, white: "…", black: notation });
+  } else {
+    copia[copia.length - 1] = { ...copia[copia.length - 1], black: notation };
+  }
+  return copia;
+}
+
 function Level4() {
-  const [board, setBoard] = useState(createInitialBoard);
-  const [turn, setTurn] = useState("w");
+  // Tablero, turno, jugadas y la posición anterior van en un solo estado: así
+  // guardar y deshacer son operaciones atómicas, sin riesgo de que queden
+  // desincronizados entre sí.
+  const [partida, setPartida] = useState(() => leerPartida() ?? partidaNueva());
   const [selected, setSelected] = useState(null);
   const [moves, setMoves] = useState([]);
-  const [log, setLog] = useState([]); // {number, white, black}
   const [copied, setCopied] = useState(false);
+  const [confirmandoReinicio, setConfirmandoReinicio] = useState(false);
 
-  const reset = () => {
-    setBoard(createInitialBoard());
-    setTurn("w");
+  const { board, turn, log } = partida;
+
+  // Una partida por correspondencia dura semanas: recargar no puede borrarla.
+  useEffect(() => {
+    guardarPartida(partida);
+  }, [partida]);
+
+  const limpiarSeleccion = () => {
     setSelected(null);
     setMoves([]);
-    setLog([]);
+  };
+
+  const empezarDeNuevo = () => {
+    setPartida(partidaNueva());
+    limpiarSeleccion();
     setCopied(false);
+    setConfirmandoReinicio(false);
+  };
+
+  // Deshace UNA jugada: alcanza para el caso real de haber tocado mal.
+  const deshacer = () => {
+    if (!partida.previous) return;
+    setPartida({ ...partida.previous, previous: null });
+    limpiarSeleccion();
+    setCopied(false);
+    setConfirmandoReinicio(false);
   };
 
   const handleClick = (row, col) => {
@@ -494,21 +546,16 @@ function Level4() {
           promoted,
         });
 
-        setLog((prev) => {
-          const copy = prev.slice();
-          if (turn === "w") {
-            copy.push({ number: copy.length + 1, white: notation, black: null });
-          } else {
-            copy[copy.length - 1] = { ...copy[copy.length - 1], black: notation };
-          }
-          return copy;
+        setPartida({
+          board: newBoard,
+          turn: turn === "w" ? "b" : "w",
+          log: agregarJugada(log, turn, notation),
+          // Se guarda la posición de antes para poder volver un paso atrás.
+          previous: { board, turn, log },
         });
-
-        setBoard(newBoard);
-        setTurn(turn === "w" ? "b" : "w");
-        setSelected(null);
-        setMoves([]);
+        limpiarSeleccion();
         setCopied(false);
+        setConfirmandoReinicio(false);
         return;
       }
       // clicking another own piece re-selects
@@ -517,8 +564,7 @@ function Level4() {
         setMoves(generateMoves(board, row, col));
         return;
       }
-      setSelected(null);
-      setMoves([]);
+      limpiarSeleccion();
       return;
     }
     if (piece && isWhite(piece) === (turn === "w")) {
@@ -548,13 +594,62 @@ function Level4() {
           Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
         </div>
         <Board board={board} onSquareClick={handleClick} selectedSquare={selected} legalMoves={moves} />
-        <button
-          onClick={reset}
-          style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
-          className="px-4 py-1.5 rounded-full text-sm font-bold shadow"
-        >
-          Empezar de nuevo
-        </button>
+
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button
+            onClick={deshacer}
+            disabled={!partida.previous}
+            style={{
+              fontFamily: "Baloo 2",
+              background: partida.previous ? COLORS.teal : "transparent",
+              color: partida.previous ? "#fff" : COLORS.inkSoft,
+              border: `2px solid ${partida.previous ? COLORS.teal : COLORS.goldSoft}`,
+              cursor: partida.previous ? "pointer" : "default",
+            }}
+            className="px-4 py-1.5 rounded-full text-sm font-bold shadow-sm transition-colors"
+          >
+            ↩ Deshacer jugada
+          </button>
+
+          {confirmandoReinicio ? (
+            <div className="flex items-center gap-2">
+              <span style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-xs font-bold">
+                ¿Seguro? Se borra la partida
+              </span>
+              <button
+                onClick={empezarDeNuevo}
+                style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
+                className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
+              >
+                Sí, borrar
+              </button>
+              <button
+                onClick={() => setConfirmandoReinicio(false)}
+                style={{ fontFamily: "Baloo 2", background: COLORS.paperCard, color: COLORS.tealDark }}
+                className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmandoReinicio(true)}
+              style={{
+                fontFamily: "Baloo 2",
+                background: "transparent",
+                color: COLORS.coral,
+                border: `2px solid ${COLORS.coral}`,
+              }}
+              className="px-4 py-1.5 rounded-full text-sm font-bold"
+            >
+              Empezar de nuevo
+            </button>
+          )}
+        </div>
+
+        <p style={{ fontFamily: "Nunito", color: COLORS.inkSoft }} className="text-[11px] text-center">
+          Tu partida se guarda sola: podés cerrar y seguir después. 💾
+        </p>
       </div>
 
       <div

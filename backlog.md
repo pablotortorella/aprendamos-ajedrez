@@ -7,41 +7,26 @@ Criterio de orden: primero lo que hace que la herramienta cumpla su promesa real
 (que Celeste pueda mandar y leer jugadas sin errores), después lo que la hace
 sostenible, y al final lo que la hace más linda.
 
+Los números son identificadores estables: cuando algo se termina queda tachado en su
+lugar, no se renumera el resto.
+
+---
+
+## ✅ Hecho
+
+- **~~1. Desambiguación en la notación~~** — `moveNotation` ahora escribe `Cbd2` / `C3d4`
+  / `Da1e5` según haga falta. Motor y notación salieron a `src/chess/` como módulos puros,
+  con tests.
+- **~~2. Guardar la partida del nivel 4~~** — la partida y el puntaje del nivel 1 se
+  guardan en `localStorage` (`src/storage.js`). Todo lo que se lee se valida: un guardado
+  corrupto se descarta y se borra, en vez de dejar la app rota en cada recarga. "Empezar
+  de nuevo" ahora pide confirmación.
+- **~~3. Deshacer la última jugada~~** — botón de deshacer un paso, que sobrevive a
+  recargar. El rebobinado completo quedó como idea aparte (punto 24).
+
 ---
 
 ## P0 — Rompe la promesa del producto
-
-Cosas que pueden hacer que una carta salga mal o que se pierda trabajo real.
-
-### 1. Desambiguación en la notación
-
-Hoy si dos caballos pueden llegar a la misma casilla, la app escribe `Cd2` para los dos.
-La notación correcta sería `Cbd2` o `C1d2`. **Es el bug más importante del proyecto**:
-Paulina recibiría una jugada que no se puede reproducir sin adivinar, que es exactamente
-lo que la app viene a evitar.
-
-- Dónde: `moveNotation(...)` en `src/App.jsx`.
-- Cómo: antes de escribir, buscar todas las piezas del mismo tipo y color que también
-  podrían ir a esa casilla. Si hay más de una, desambiguar por columna; si comparten
-  columna, por fila.
-- Es una función pura → primer candidato natural para tener tests.
-
-### 2. Guardar la partida del nivel 4
-
-Una partida por correspondencia dura semanas. Hoy recargar la página borra todo. Si
-Celeste cierra la pestaña, perdió la partida.
-
-- Guardar en `localStorage`: tablero, turno e historial de jugadas.
-- Guardar también el puntaje del nivel 1 (hoy también se reinicia).
-- Agregar un botón explícito de "Empezar una partida nueva" que confirme antes de borrar
-  (el botón actual "Empezar de nuevo" ya borra sin preguntar).
-
-### 3. Deshacer la última jugada
-
-Una nena de 6 años va a tocar la casilla equivocada, y hoy no hay vuelta atrás: hay que
-reiniciar la partida entera. Es la causa más probable de frustración con la app.
-
-- Guardar el historial de tableros (no solo de notaciones) y permitir volver un paso.
 
 ### 4. Sacar los nombres del código
 
@@ -92,16 +77,13 @@ automático según el turno) resuelve el modo "dos jugadores en el mismo disposi
 
 Nada de esto se ve, pero sin esto cada cambio nuevo cuesta más que el anterior.
 
-### 9. Partir `src/App.jsx`
+### 9. Terminar de partir `src/App.jsx`
 
-Son ~800 líneas con todo adentro: tokens, motor, notación, UI y los cinco niveles.
-
-Propuesta de división:
+Ya salieron el motor (`chess/engine.js`), la notación (`chess/notation.js`) y el guardado
+(`storage.js`). Falta lo que sigue siendo UI en un solo archivo:
 
 ```
 src/
-  chess/engine.js       generateMoves, board helpers  (funciones puras)
-  chess/notation.js     moveNotation + futuro parser   (funciones puras)
   content/pieces.js     PIECE_INFO
   content/tips.js       TIPS
   components/Board.jsx  Board, Square
@@ -109,21 +91,15 @@ src/
   theme.js              COLORS y tipografías
 ```
 
-El motor y la notación son funciones puras sin React: separarlas es lo que hace posible
-testearlas.
+Menos urgente que antes: lo testeable ya está afuera. Es prolijidad, no riesgo.
 
-### 10. Tests con Vitest
+### 10. Tests de los componentes
 
-El motor es el candidato perfecto: entra un tablero, sale una lista de movimientos.
+El motor, la notación y el guardado ya tienen tests (`npm test`). Lo que no tiene son los
+componentes React: hoy esa parte se verifica a mano en el navegador.
 
-Casos que hay que cubrir sí o sí:
-
-- Caballo en la esquina (a1) → 2 movimientos, no 8.
-- Peón con el doble paso bloqueado por una pieza justo adelante.
-- Peón que no puede comer de frente.
-- Torre/alfil/dama frenados por pieza propia vs. capturando pieza rival.
-- Promoción → notación `=D`.
-- Desambiguación (punto 1), una vez implementada.
+- Sumar `@testing-library/react` y cubrir el flujo del nivel 4 (jugar, deshacer, reiniciar).
+- Un test que valide que la partida guardada se recupera al montar el componente.
 
 ### 11. Linter, formato y CI
 
@@ -141,9 +117,9 @@ Casos que hay que cubrir sí o sí:
   activo.
 - **`Level1`**: los `setTimeout` no se limpian al desmontar. Si se cambia de nivel justo
   después de responder, queda un `setState` huérfano. Usar `useEffect` con cleanup.
-- **`Level4`**: `copy[copy.length - 1]` asume que ya existe una entrada de las blancas.
-  Hoy es cierto porque siempre empiezan blancas, pero se rompe apenas se agregue "cargar
-  una posición" o "empezar con negras". Manejar el caso explícitamente.
+- ~~**`Level4`**: `copy[copy.length - 1]` asumía que ya existía una entrada de las
+  blancas.~~ Resuelto al guardar la partida: ahora `agregarJugada` anota `"…"` si llegara
+  una jugada de negras con el historial vacío.
 - **Copiar la carta**: si `navigator.clipboard` falla (contexto no seguro, permisos), el
   `catch` sólo hace `setCopied(false)` y no pasa nada visible. Hay que mostrar un mensaje
   y ofrecer el texto seleccionable como alternativa.
@@ -221,7 +197,25 @@ diagonal") convierte cada error en una mini-lección.
 ### 23. Progreso visible entre niveles
 
 Una marca de completado por nivel y algún logro simple ("¡encontraste 20 casillas!").
-Depende de tener persistencia (punto 2).
+La persistencia (punto 2) ya está, así que esto quedó destrabado.
+
+### 24. Rebobinar la partida entera
+
+Hoy se deshace **una** jugada. Se decidió así a propósito: resuelve el caso real (tocar
+la casilla equivocada) sin agregar una función que hay que aprender a los 6 años.
+
+La versión amplia —volver a cualquier jugada anterior, como un navegador de partida—
+tiene sentido más adelante, y por dos motivos distintos:
+
+- **Para repasar juntos**: recorrer la partida jugada por jugada y comentar qué pasó.
+- **Porque el nivel "leer la carta" (punto 5) ya necesita ese mecanismo**: avanzar y
+  retroceder jugadas es exactamente lo que hace ese nivel.
+
+Por eso conviene hacerlo *con* el punto 5 y no antes: ahí el rebobinado no es una función
+extra en un tablero de juego, sino el modo de uso natural de una pantalla nueva.
+
+Implica cambiar `previous` (una sola posición) por un historial de posiciones. El estado
+del nivel 4 ya está agrupado en un solo objeto, así que el cambio queda contenido.
 
 ---
 
