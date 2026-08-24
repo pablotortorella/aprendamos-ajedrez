@@ -35,6 +35,11 @@ lugar, no se renumera el resto.
   indicador de turno) que gira el tablero 180° en el nivel "Escribí tu carta": coordenadas
   y piezas se relabelan, el estado de la partida no cambia. Manual y no automático por
   turno, para no sorprender a mitad de jugada.
+- **~~6. Subir las jugadas de una partida en curso~~** — pegar la lista de jugadas de una
+  carta (propia o pegada) reconstruye el tablero desde cero: `parseMove` + `resolveMove` en
+  `chess/notation.js` son el inverso exacto de `moveNotation`, `extraerJugadas` en
+  `carta.js` es el inverso de `textoCarta`. Pide confirmación antes de reemplazar una
+  partida local que ya tenía jugadas, igual que "Empezar de nuevo".
 - **Publicar en GitHub Pages** — deploy automático por GitHub Actions
   (`.github/workflows/deploy.yml`) en cada push a `main`, en
   https://pablotortorella.github.io/aprendamos-ajedrez/
@@ -57,20 +62,6 @@ va a cambiar: no tiene sentido construir una lección de lectura dentro de la ap
 paso que ya pasa por otro canal. Si en algún momento se necesita reconstruir una posición
 a partir de jugadas pegadas, esa necesidad más chica y concreta quedó capturada en el
 punto 6 — sin la capa de "lección" encima.
-
-### 6. Subir las jugadas de una partida en curso
-
-Poder pegar la lista de jugadas de una partida que se viene jugando (por WhatsApp u otro
-canal) y que la app reconstruya la posición, para seguir jugando o anotando desde ahí sin
-rejugar todo a mano. Es la otra mitad de "Copiar carta" (que ya baja/exporta las jugadas):
-bajar ya existe, subir no.
-
-- Necesita el mismo parser de notación española → movimiento que pedía el punto 5 (inverso
-  exacto de `moveNotation`), pero sin la UI de lectura paso a paso: acá alcanza con aplicar
-  toda la lista de una y quedar parado en la posición resultante, lista para la próxima
-  jugada.
-- Útil también para sincronizar el tablero entre dispositivos si la partida se retoma en
-  otro lado.
 
 ### 7. Detección de jaque
 
@@ -216,12 +207,13 @@ La versión amplia —volver a cualquier jugada anterior, como un navegador de p
 tiene sentido más adelante, y por dos motivos distintos:
 
 - **Para repasar juntos**: recorrer la partida jugada por jugada y comentar qué pasó.
-- **Porque "subir las jugadas" (punto 6) ya necesita ese mecanismo**: reconstruir la
-  posición jugada por jugada es justamente cómo se valida y se muestra el resultado de
-  pegar una lista de jugadas.
+- **Para revisar una carta subida**: el punto 6 ("Subir las jugadas") ya reconstruye toda
+  la partida internamente, pero hoy sólo se ve el resultado final. Con historial de
+  posiciones, subir una carta podría dejar navegar jugada por jugada en vez de aterrizar
+  directo en la última.
 
-Por eso conviene hacerlo *con* el punto 6 y no antes: ahí el rebobinado no es una función
-extra en un tablero de juego, sino parte natural de reconstruir una partida pegada.
+Sigue sin ser urgente: el punto 6 ya funciona sin esto. Vale la pena cuando alguna de las
+dos razones de arriba se vuelva concreta, no antes.
 
 Implica cambiar `previous` (una sola posición) por un historial de posiciones. El estado
 del nivel 4 ya está agrupado en un solo objeto, así que el cambio queda contenido.
