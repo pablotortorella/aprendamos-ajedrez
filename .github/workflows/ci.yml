@@ -16,7 +16,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # jsdom (tests de componentes) pide Node >=22.22.2. Antes decía 20
+          # y esto rompía en CI aunque pasara en local (variaba por versión
+          # exacta de Node instalada en cada lado).
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run format:check
