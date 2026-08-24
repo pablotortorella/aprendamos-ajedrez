@@ -778,24 +778,29 @@ function Level4({ nombres, onCambiarNombres }) {
           </button>
 
           {confirmandoReinicio ? (
-            <div className="flex items-center gap-2">
+            // En columna, no en fila: si va todo en una sola línea, este bloque
+            // es más ancho que los botones normales y estira el tablero con él
+            // (comparten la misma columna de ancho automático).
+            <div className="flex flex-col items-center gap-1.5">
               <span style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-xs font-bold">
                 ¿Seguro? Se borra la partida
               </span>
-              <button
-                onClick={empezarDeNuevo}
-                style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
-                className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
-              >
-                Sí, borrar
-              </button>
-              <button
-                onClick={() => setConfirmandoReinicio(false)}
-                style={{ fontFamily: "Baloo 2", background: COLORS.paperCard, color: COLORS.tealDark }}
-                className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
-              >
-                No
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={empezarDeNuevo}
+                  style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
+                  className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
+                >
+                  Sí, borrar
+                </button>
+                <button
+                  onClick={() => setConfirmandoReinicio(false)}
+                  style={{ fontFamily: "Baloo 2", background: COLORS.paperCard, color: COLORS.tealDark }}
+                  className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
+                >
+                  No
+                </button>
+              </div>
             </div>
           ) : (
             <button
