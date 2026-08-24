@@ -18,5 +18,16 @@ export const COLORS = {
   moveHint: "#7FBF8F",
 };
 
-export const FONT_IMPORT =
-  "@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Caveat:wght@600;700&display=swap');";
+// Las fuentes (Baloo 2, Nunito, Caveat) están auto-hospedadas con @fontsource
+// y se cargan en main.jsx: la app no depende de Google Fonts por internet.
+//
+// Van entre comillas literales adentro del string porque "Baloo 2" tiene un
+// espacio y termina en un número: sin comillas, `font-family: Baloo 2` es CSS
+// inválido (el "2" no es un identificador válido) y el navegador descarta la
+// propiedad entera y hereda la fuente del contenedor sin avisar. Usar estas
+// constantes en vez de escribir el nombre a mano evita reintroducir el bug.
+export const FONTS = {
+  baloo: '"Baloo 2"',
+  nunito: '"Nunito"',
+  caveat: '"Caveat"',
+};

@@ -1,6 +1,6 @@
 import { algebraic } from "../chess/engine.js";
 import { pieceGlyph } from "../content/pieces.js";
-import { COLORS } from "../theme.js";
+import { COLORS, FONTS } from "../theme.js";
 
 function Square({ dark, children, onClick, highlight, capture, selected, coordLabel, flash, correctReveal, inCheck }) {
   return (
@@ -26,20 +26,20 @@ function Square({ dark, children, onClick, highlight, capture, selected, coordLa
     >
       {children}
       {highlight && !capture && (
-        <div style={{ background: COLORS.moveHint, opacity: 0.85 }} className="absolute rounded-full w-1/3 h-1/3" />
+        <div style={{ opacity: 0.85 }} className="absolute rounded-full w-1/3 h-1/3 bg-cartero-move-hint" />
       )}
       {capture && (
-        <div style={{ border: `4px solid ${COLORS.coral}`, opacity: 0.9 }} className="absolute inset-1 rounded-md" />
+        <div style={{ opacity: 0.9 }} className="absolute inset-1 rounded-md border-4 border-cartero-coral" />
       )}
       {inCheck && (
         <div
-          style={{ border: `4px solid ${COLORS.coral}`, opacity: 0.9 }}
-          className="absolute inset-1 rounded-md animate-pulse"
+          style={{ opacity: 0.9 }}
+          className="absolute inset-1 rounded-md animate-pulse border-4 border-cartero-coral"
         />
       )}
       {coordLabel && (
         <span
-          style={{ color: dark ? COLORS.goldSoft : COLORS.teal, fontFamily: "Nunito" }}
+          style={{ color: dark ? COLORS.goldSoft : COLORS.teal, fontFamily: FONTS.nunito }}
           className="absolute bottom-0.5 right-1 text-[9px] sm:text-xs font-bold opacity-80"
         >
           {coordLabel}
@@ -64,12 +64,11 @@ export default function Board({
   return (
     <div
       style={{
-        border: `6px solid ${COLORS.tealDark}`,
         borderRadius: 12,
         overflow: "hidden",
         boxShadow: "0 8px 24px rgba(22,78,83,0.25)",
       }}
-      className="grid grid-cols-8 w-full max-w-md mx-auto"
+      className="grid grid-cols-8 w-full max-w-md mx-auto border-6 border-cartero-teal-dark"
     >
       {board.map((rowArr, displayRow) =>
         rowArr.map((_, displayCol) => {

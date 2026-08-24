@@ -6,7 +6,7 @@ import Level3 from "./levels/Level3.jsx";
 import Level4 from "./levels/Level4.jsx";
 import LevelTip from "./levels/LevelTip.jsx";
 import { guardarNombres, leerNombres } from "./storage.js";
-import { COLORS, FONT_IMPORT } from "./theme.js";
+import { FONTS } from "./theme.js";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -18,17 +18,18 @@ export default function App() {
   }, [nombres]);
 
   return (
-    <div style={{ background: COLORS.paper, minHeight: "100vh", fontFamily: "Nunito" }} className="p-4 sm:p-6">
-      <style>{FONT_IMPORT}</style>
-
+    <div style={{ minHeight: "100vh", fontFamily: FONTS.nunito }} className="p-4 sm:p-6 bg-cartero-paper">
       <header className="max-w-2xl mx-auto text-center mb-5">
         <div className="flex items-center justify-center gap-2">
           <span className="text-3xl">📮</span>
-          <h1 style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="text-2xl sm:text-3xl font-extrabold">
+          <h1
+            style={{ fontFamily: FONTS.baloo }}
+            className="text-2xl sm:text-3xl font-extrabold text-cartero-teal-dark"
+          >
             El Cartero de Ajedrez
           </h1>
         </div>
-        <p style={{ color: COLORS.inkSoft }} className="text-sm mt-1">
+        <p className="text-sm mt-1 text-cartero-ink-soft">
           {nombres.destinataria
             ? `Aprendé a nombrar las jugadas para escribirle a ${nombres.destinataria}`
             : "Aprendé a nombrar las jugadas para escribirle a quien juega con vos"}
@@ -51,7 +52,7 @@ export default function App() {
         {level === 5 && <LevelTip />}
       </main>
 
-      <footer style={{ color: COLORS.inkSoft }} className="text-center text-xs mt-6 pb-4">
+      <footer className="text-center text-xs mt-6 pb-4 text-cartero-ink-soft">
         <p>Notación en español · sin enroque ni captura al paso, para no complicar todavía 🙂</p>
         <p className="mt-1">
           Hecho por Pablo Tortorella, en colaboración con Claude Code · Software libre (GPL-3.0) ·{" "}
@@ -59,8 +60,7 @@ export default function App() {
             href="https://github.com/pablotortorella/aprendamos-ajedrez"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: COLORS.teal }}
-            className="underline"
+            className="underline text-cartero-teal"
           >
             código en GitHub
           </a>

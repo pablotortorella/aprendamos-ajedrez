@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TIPS } from "../content/tips.js";
-import { COLORS } from "../theme.js";
+import { COLORS, FONTS } from "../theme.js";
 
 /* ============ Nivel 5: consejo ============ */
 
@@ -15,14 +15,14 @@ export default function LevelTip() {
   return (
     <div className="max-w-md mx-auto flex flex-col items-center gap-4">
       <div
-        style={{ background: COLORS.paperCard, border: `2px solid ${COLORS.coral}`, minHeight: 220 }}
-        className="rounded-2xl p-5 text-center shadow-md w-full flex flex-col items-center justify-center"
+        style={{ minHeight: 220 }}
+        className="rounded-2xl p-5 text-center shadow-md w-full flex flex-col items-center justify-center bg-cartero-paper-card border-2 border-cartero-coral"
       >
         <span className="text-5xl">{tip.emoji}</span>
-        <p style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="font-extrabold text-lg mt-2">
+        <p style={{ fontFamily: FONTS.baloo }} className="font-extrabold text-lg mt-2 text-cartero-teal-dark">
           {tip.titulo}
         </p>
-        <p style={{ fontFamily: "Nunito", color: COLORS.inkSoft }} className="text-sm mt-2">
+        <p style={{ fontFamily: FONTS.nunito }} className="text-sm mt-2 text-cartero-ink-soft">
           {tip.texto}
         </p>
       </div>
@@ -30,8 +30,8 @@ export default function LevelTip() {
       <div className="flex items-center gap-4">
         <button
           onClick={() => go(-1)}
-          style={{ fontFamily: "Baloo 2", background: COLORS.teal, color: "#fff" }}
-          className="w-9 h-9 rounded-full font-bold text-lg shadow"
+          style={{ fontFamily: FONTS.baloo }}
+          className="w-9 h-9 rounded-full font-bold text-lg shadow text-white bg-cartero-teal"
           aria-label="Consejo anterior"
         >
           ‹
@@ -51,14 +51,14 @@ export default function LevelTip() {
         </div>
         <button
           onClick={() => go(1)}
-          style={{ fontFamily: "Baloo 2", background: COLORS.teal, color: "#fff" }}
-          className="w-9 h-9 rounded-full font-bold text-lg shadow"
+          style={{ fontFamily: FONTS.baloo }}
+          className="w-9 h-9 rounded-full font-bold text-lg shadow text-white bg-cartero-teal"
           aria-label="Siguiente consejo"
         >
           ›
         </button>
       </div>
-      <p style={{ fontFamily: "Nunito", color: COLORS.inkSoft }} className="text-xs">
+      <p style={{ fontFamily: FONTS.nunito }} className="text-xs text-cartero-ink-soft">
         Consejo {index + 1} de {TIPS.length}
       </p>
     </div>

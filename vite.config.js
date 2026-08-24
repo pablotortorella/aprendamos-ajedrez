@@ -7,4 +7,11 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   base: "./",
   plugins: [react(), tailwindcss()],
+  test: {
+    // Los tests puros (motor, notación, carta, guardado) no necesitan DOM y
+    // corren más rápido sin él. Los tests de componentes lo piden por archivo
+    // con "// @vitest-environment jsdom" arriba de todo.
+    environment: "node",
+    setupFiles: ["./src/test/setup.js"],
+  },
 });

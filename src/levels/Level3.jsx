@@ -3,7 +3,7 @@ import { createEmptyBoard, generateMoves } from "../chess/engine.js";
 import { moveNotation } from "../chess/notation.js";
 import Board from "../components/Board.jsx";
 import { PIECE_INFO, UNICODE } from "../content/pieces.js";
-import { COLORS } from "../theme.js";
+import { COLORS, FONTS } from "../theme.js";
 
 /* ============ Nivel 3: cómo se mueven ============ */
 
@@ -37,7 +37,7 @@ export default function Level3() {
               setDestNote(null);
             }}
             style={{
-              fontFamily: "Baloo 2",
+              fontFamily: FONTS.baloo,
               background: selected === type ? COLORS.gold : COLORS.paperCard,
               color: selected === type ? "#FFFFFF" : COLORS.tealDark,
               border: `2px solid ${COLORS.gold}`,
@@ -49,12 +49,12 @@ export default function Level3() {
           </button>
         ))}
       </div>
-      <p style={{ fontFamily: "Nunito", color: COLORS.inkSoft }} className="text-sm text-center max-w-sm">
+      <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-sm text-center max-w-sm">
         Los círculos verdes muestran adónde puede ir el {PIECE_INFO[selected].name.toLowerCase()}. Tocá uno para ver
         cómo se escribe esa jugada.
       </p>
       <Board board={board} legalMoves={moves} onSquareClick={handleClick} />
-      <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark, minHeight: 28 }} className="text-lg font-bold">
+      <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark, minHeight: 28 }} className="text-lg font-bold">
         {destNote ? (
           <>
             Esa jugada se escribe: <span style={{ color: COLORS.coral }}>{destNote}</span>

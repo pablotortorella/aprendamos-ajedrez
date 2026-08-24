@@ -1,11 +1,11 @@
-import { COLORS } from "../theme.js";
+import { COLORS, FONTS } from "../theme.js";
 
 export default function LevelTab({ active, onClick, label, emoji }) {
   return (
     <button
       onClick={onClick}
       style={{
-        fontFamily: "Baloo 2",
+        fontFamily: FONTS.baloo,
         background: active ? COLORS.teal : COLORS.paperCard,
         color: active ? "#FFFFFF" : COLORS.teal,
         border: `2px solid ${COLORS.teal}`,

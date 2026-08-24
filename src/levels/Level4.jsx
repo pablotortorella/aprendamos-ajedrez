@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   applyMove,
   createInitialBoard,
@@ -13,7 +13,7 @@ import Board from "../components/Board.jsx";
 import { extraerJugadas, recortarMientrasEscribe, textoCarta } from "../carta.js";
 import { guardarPartida, leerPartida } from "../storage.js";
 import { descargarTableroComoImagen } from "../tableroImagen.js";
-import { COLORS } from "../theme.js";
+import { COLORS, FONTS } from "../theme.js";
 
 /* ============ Nivel 4: escribí tu carta ============ */
 
@@ -123,6 +123,8 @@ export default function Level4({ nombres, onCambiarNombres }) {
   const [selected, setSelected] = useState(null);
   const [moves, setMoves] = useState([]);
   const [copied, setCopied] = useState(false);
+  const [errorCopiado, setErrorCopiado] = useState(false);
+  const cartaRef = useRef(null);
   const [confirmandoReinicio, setConfirmandoReinicio] = useState(false);
   const [flipped, setFlipped] = useState(false);
   const [textoPegado, setTextoPegado] = useState("");
@@ -159,6 +161,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
     setPartida(partidaNueva());
     limpiarSeleccion();
     setCopied(false);
+    setErrorCopiado(false);
     setConfirmandoReinicio(false);
   };
 
@@ -168,6 +171,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
     setPartida({ ...partida.previous, previous: null });
     limpiarSeleccion();
     setCopied(false);
+    setErrorCopiado(false);
     setConfirmandoReinicio(false);
   };
 
@@ -192,6 +196,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
     setConfirmandoSubida(false);
     limpiarSeleccion();
     setCopied(false);
+    setErrorCopiado(false);
     setConfirmandoReinicio(false);
   };
 
@@ -217,6 +222,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
         });
         limpiarSeleccion();
         setCopied(false);
+        setErrorCopiado(false);
         setConfirmandoReinicio(false);
         return;
       }
@@ -237,12 +243,29 @@ export default function Level4({ nombres, onCambiarNombres }) {
 
   const cartaTexto = useMemo(() => textoCarta(log, nombres), [log, nombres]);
 
+  /**
+   * Si el clipboard no está disponible (contexto no seguro, permisos
+   * denegados, navegador viejo), no basta con no hacer nada: hay que avisar y
+   * dejar el texto listo para copiar a mano. Seleccionarlo automáticamente
+   * hace que alcance con un Ctrl+C / Cmd+C, o "Copiar" desde el menú del
+   * celular.
+   */
   const copiar = async () => {
     try {
       await navigator.clipboard.writeText(cartaTexto);
       setCopied(true);
+      setErrorCopiado(false);
     } catch {
       setCopied(false);
+      setErrorCopiado(true);
+      const nodo = cartaRef.current;
+      const seleccion = typeof window !== "undefined" ? window.getSelection?.() : null;
+      if (nodo && seleccion) {
+        const rango = document.createRange();
+        rango.selectNodeContents(nodo);
+        seleccion.removeAllRanges();
+        seleccion.addRange(rango);
+      }
     }
   };
 
@@ -250,7 +273,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
     <div className="flex flex-col lg:flex-row gap-5 items-start justify-center">
       <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
         <div className="flex items-center gap-2">
-          <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="font-bold text-sm">
+          <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="font-bold text-sm">
             {enJaqueMate ? (
               // En jaque mate no hay "próximo turno": el juego terminó. Ganó
               // quien acaba de mover, es decir el color contrario al que está
@@ -270,7 +293,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
             title="Girar el tablero"
             aria-label="Girar el tablero"
             style={{
-              fontFamily: "Baloo 2",
+              fontFamily: FONTS.baloo,
               background: "transparent",
               color: COLORS.tealDark,
               border: `2px solid ${COLORS.goldSoft}`,
@@ -284,7 +307,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
             title="Descargar imagen del tablero"
             aria-label="Descargar imagen del tablero"
             style={{
-              fontFamily: "Baloo 2",
+              fontFamily: FONTS.baloo,
               background: "transparent",
               color: COLORS.tealDark,
               border: `2px solid ${COLORS.goldSoft}`,
@@ -308,7 +331,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
             onClick={deshacer}
             disabled={!partida.previous}
             style={{
-              fontFamily: "Baloo 2",
+              fontFamily: FONTS.baloo,
               background: partida.previous ? COLORS.teal : "transparent",
               color: partida.previous ? "#fff" : COLORS.inkSoft,
               border: `2px solid ${partida.previous ? COLORS.teal : COLORS.goldSoft}`,
@@ -324,20 +347,20 @@ export default function Level4({ nombres, onCambiarNombres }) {
             // es más ancho que los botones normales y estira el tablero con él
             // (comparten la misma columna de ancho automático).
             <div className="flex flex-col items-center gap-1.5">
-              <span style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-xs font-bold">
+              <span style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-xs font-bold">
                 ¿Seguro? Se borra la partida
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={empezarDeNuevo}
-                  style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
+                  style={{ fontFamily: FONTS.baloo, background: COLORS.coral, color: "#fff" }}
                   className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
                 >
                   Sí, borrar
                 </button>
                 <button
                   onClick={() => setConfirmandoReinicio(false)}
-                  style={{ fontFamily: "Baloo 2", background: COLORS.paperCard, color: COLORS.tealDark }}
+                  style={{ fontFamily: FONTS.baloo, background: COLORS.paperCard, color: COLORS.tealDark }}
                   className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
                 >
                   No
@@ -348,7 +371,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
             <button
               onClick={() => setConfirmandoReinicio(true)}
               style={{
-                fontFamily: "Baloo 2",
+                fontFamily: FONTS.baloo,
                 background: "transparent",
                 color: COLORS.coral,
                 border: `2px solid ${COLORS.coral}`,
@@ -360,26 +383,26 @@ export default function Level4({ nombres, onCambiarNombres }) {
           )}
         </div>
 
-        <p style={{ fontFamily: "Nunito", color: COLORS.inkSoft }} className="text-[11px] text-center">
+        <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-[11px] text-center">
           Tu partida se guarda sola: podés cerrar y seguir después. 💾
         </p>
       </div>
 
       <div
         style={{
-          fontFamily: "Caveat",
+          fontFamily: FONTS.caveat,
           background: COLORS.paperCard,
           border: `2px dashed ${COLORS.gold}`,
           color: COLORS.ink,
         }}
         className="rounded-2xl p-4 w-full lg:w-72 shadow-md"
       >
-        <p style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="text-sm font-bold mb-2 not-italic">
+        <p style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="text-sm font-bold mb-2 not-italic">
           ✉️ Tu carta{nombres.destinataria ? ` para ${nombres.destinataria}` : ""}
         </p>
 
         <div className="flex flex-col gap-1.5 mb-3 not-italic">
-          <label style={{ fontFamily: "Nunito" }} className="flex flex-col gap-0.5">
+          <label style={{ fontFamily: FONTS.nunito }} className="flex flex-col gap-0.5">
             <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
               ¿A quién le escribís?
             </span>
@@ -388,11 +411,11 @@ export default function Level4({ nombres, onCambiarNombres }) {
               value={nombres.destinataria}
               onChange={(e) => onCambiarNombres({ ...nombres, destinataria: recortarMientrasEscribe(e.target.value) })}
               placeholder="Su nombre"
-              style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
+              style={{ fontFamily: FONTS.nunito, border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
           </label>
-          <label style={{ fontFamily: "Nunito" }} className="flex flex-col gap-0.5">
+          <label style={{ fontFamily: FONTS.nunito }} className="flex flex-col gap-0.5">
             <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
               ¿Quién escribe?
             </span>
@@ -401,13 +424,14 @@ export default function Level4({ nombres, onCambiarNombres }) {
               value={nombres.remitente}
               onChange={(e) => onCambiarNombres({ ...nombres, remitente: recortarMientrasEscribe(e.target.value) })}
               placeholder="Tu nombre"
-              style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
+              style={{ fontFamily: FONTS.nunito, border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
           </label>
         </div>
         <pre
-          style={{ fontFamily: "Caveat", fontSize: "1.15rem", whiteSpace: "pre-wrap", color: COLORS.ink }}
+          ref={cartaRef}
+          style={{ fontFamily: FONTS.caveat, fontSize: "1.15rem", whiteSpace: "pre-wrap", color: COLORS.ink }}
           className="min-h-[120px] leading-snug"
         >
           {log.length === 0 ? "Todavía no jugaste ninguna jugada..." : cartaTexto}
@@ -415,15 +439,21 @@ export default function Level4({ nombres, onCambiarNombres }) {
         {log.length > 0 && (
           <button
             onClick={copiar}
-            style={{ fontFamily: "Nunito", background: COLORS.teal, color: "#fff" }}
+            style={{ fontFamily: FONTS.nunito, background: COLORS.teal, color: "#fff" }}
             className="mt-2 px-3 py-1.5 rounded-full text-xs font-bold"
           >
             {copied ? "¡Copiada! ✅" : "Copiar carta"}
           </button>
         )}
+        {errorCopiado && (
+          <p style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-[11px] font-bold mt-1">
+            No se pudo copiar sola. Ya te dejé el texto de arriba seleccionado: copialo con Ctrl+C (o "Copiar" desde el
+            celular).
+          </p>
+        )}
 
         <div className="mt-3 pt-3 not-italic" style={{ borderTop: `1px dashed ${COLORS.gold}` }}>
-          <label style={{ fontFamily: "Nunito" }} className="flex flex-col gap-0.5">
+          <label style={{ fontFamily: FONTS.nunito }} className="flex flex-col gap-0.5">
             <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
               ¿Te llegó una carta? Pegala acá para seguir la partida
             </span>
@@ -436,32 +466,32 @@ export default function Level4({ nombres, onCambiarNombres }) {
               }}
               placeholder={"1. e4  e5\n2. Cf3  Cc6"}
               rows={3}
-              style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
+              style={{ fontFamily: FONTS.nunito, border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
           </label>
 
           {errorSubida && (
-            <p style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-[11px] font-bold mt-1">
+            <p style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-[11px] font-bold mt-1">
               {errorSubida}
             </p>
           )}
 
           {confirmandoSubida ? (
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-[11px] font-bold">
+              <span style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-[11px] font-bold">
                 ¿Seguro? Se reemplaza la partida actual
               </span>
               <button
                 onClick={subirJugadas}
-                style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
+                style={{ fontFamily: FONTS.baloo, background: COLORS.coral, color: "#fff" }}
                 className="px-3 py-1 rounded-full text-xs font-bold shadow"
               >
                 Sí, reemplazar
               </button>
               <button
                 onClick={() => setConfirmandoSubida(false)}
-                style={{ fontFamily: "Baloo 2", background: COLORS.paperCard, color: COLORS.tealDark }}
+                style={{ fontFamily: FONTS.baloo, background: COLORS.paperCard, color: COLORS.tealDark }}
                 className="px-3 py-1 rounded-full text-xs font-bold shadow"
               >
                 No
@@ -472,7 +502,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
               onClick={subirJugadas}
               disabled={!textoPegado.trim()}
               style={{
-                fontFamily: "Nunito",
+                fontFamily: FONTS.nunito,
                 background: textoPegado.trim() ? COLORS.tealDark : "transparent",
                 color: textoPegado.trim() ? "#fff" : COLORS.inkSoft,
                 border: `1.5px solid ${textoPegado.trim() ? COLORS.tealDark : COLORS.goldSoft}`,

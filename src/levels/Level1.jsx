@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { algebraic, createEmptyBoard } from "../chess/engine.js";
 import Board from "../components/Board.jsx";
 import { guardarPuntos, leerPuntos } from "../storage.js";
-import { COLORS } from "../theme.js";
+import { COLORS, FONTS } from "../theme.js";
 
 /* ============ Nivel 1: coordenadas ============ */
 
@@ -74,11 +74,11 @@ export default function Level1() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="text-center">
+      <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="text-center">
         <p className="text-lg sm:text-xl font-bold">
           ¿Dónde está <span style={{ color: COLORS.coral }}>{algebraic(target.row, target.col)}</span>?
         </p>
-        <p style={{ fontFamily: "Nunito", color: COLORS.inkSoft }} className="text-sm mt-1">
+        <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-sm mt-1">
           Tocá esa casilla en el tablero. Las letras van de a a h, los números de 1 a 8.
         </p>
       </div>
@@ -91,7 +91,7 @@ export default function Level1() {
       <div className="flex items-center gap-3">
         <span
           style={{
-            fontFamily: "Nunito",
+            fontFamily: FONTS.nunito,
             color: feedback === "bien" ? "#2E8B57" : feedback === "mal" ? COLORS.coral : COLORS.inkSoft,
           }}
           className="font-bold text-sm h-5"
@@ -105,7 +105,7 @@ export default function Level1() {
                 : "\u00A0"}
         </span>
       </div>
-      <div style={{ fontFamily: "Baloo 2", color: COLORS.gold }} className="text-base font-extrabold">
+      <div style={{ fontFamily: FONTS.baloo, color: COLORS.gold }} className="text-base font-extrabold">
         Puntos: {score}
       </div>
     </div>

@@ -1,7 +1,34 @@
 @import "tailwindcss";
 
-/* Las fuentes (Baloo 2, Nunito, Caveat) las importa el propio componente App.jsx
-   junto con su paleta, para que el archivo siga siendo autocontenido. */
+/* Las fuentes (Baloo 2, Nunito, Caveat) están auto-hospedadas con @fontsource
+   y se importan en main.jsx. */
+
+/* ============ Paleta como tokens de Tailwind ============
+   Mismos valores que COLORS en theme.js — ese archivo sigue siendo la fuente
+   de verdad para los `style={{}}` dinámicos (los que dependen de estado, tipo
+   `background: activo ? COLORS.teal : "transparent"`), porque Tailwind no
+   puede expresar un color condicional en tiempo de ejecución sin lógica extra
+   de por medio. Esto de acá es para el resto: colores fijos, conocidos de
+   antemano, que hoy se escriben en JSX como `style={{ background: COLORS.paper }}`
+   y podrían ser directamente `className="bg-cartero-paper"`.
+
+   Prefijo "cartero-" a propósito: sin él, un nombre como `--color-teal` pisaría
+   la escala incorporada de Tailwind (`teal-50`...`teal-950`), y quedarían dos
+   cosas distintas respondiendo a "teal". */
+@theme {
+  --color-cartero-paper: #eaf2f0;
+  --color-cartero-paper-card: #ffffff;
+  --color-cartero-ink: #1f3a3e;
+  --color-cartero-ink-soft: #4c6b6e;
+  --color-cartero-teal: #1f6f76;
+  --color-cartero-teal-dark: #164e53;
+  --color-cartero-square-light: #f5ecd9;
+  --color-cartero-square-dark: #2a6f77;
+  --color-cartero-gold: #e8a33d;
+  --color-cartero-gold-soft: #f6d8a0;
+  --color-cartero-coral: #e0574c;
+  --color-cartero-move-hint: #7fbf8f;
+}
 
 html,
 body,
