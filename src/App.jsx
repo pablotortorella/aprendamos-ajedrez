@@ -983,8 +983,8 @@ export default function App() {
       </header>
 
       <nav className="max-w-2xl mx-auto flex flex-wrap justify-center gap-2 mb-6">
-        <LevelTab active={level === 1} onClick={() => setLevel(1)} emoji="🗺️" label="1. Ubicá casillas" />
-        <LevelTab active={level === 2} onClick={() => setLevel(2)} emoji="♟️" label="2. Conocé piezas" />
+        <LevelTab active={level === 1} onClick={() => setLevel(1)} emoji="♟️" label="1. Conocé piezas" />
+        <LevelTab active={level === 2} onClick={() => setLevel(2)} emoji="🗺️" label="2. Ubicá casillas" />
         <LevelTab active={level === 3} onClick={() => setLevel(3)} emoji="🧭" label="3. Cómo se mueven" />
         <LevelTab active={level === 4} onClick={() => setLevel(4)} emoji="✉️" label="4. Escribí tu carta" />
         <LevelTab active={level === 5} onClick={() => setLevel(5)} emoji="👑" label="Consejos" />
@@ -994,15 +994,27 @@ export default function App() {
         style={{ background: "rgba(255,255,255,0.5)", borderRadius: 24 }}
         className="max-w-3xl mx-auto p-4 sm:p-6"
       >
-        {level === 1 && <Level1 />}
-        {level === 2 && <Level2 />}
+        {level === 1 && <Level2 />}
+        {level === 2 && <Level1 />}
         {level === 3 && <Level3 />}
         {level === 4 && <Level4 nombres={nombres} onCambiarNombres={setNombres} />}
         {level === 5 && <LevelTip />}
       </main>
 
-      <footer style={{ color: COLORS.inkSoft }} className="text-center text-xs mt-6">
-        Notación en español · sin enroque ni captura al paso, para no complicar todavía 🙂
+      <footer style={{ color: COLORS.inkSoft }} className="text-center text-xs mt-6 pb-4">
+        <p>Notación en español · sin enroque ni captura al paso, para no complicar todavía 🙂</p>
+        <p className="mt-1">
+          Hecho por Pablo Tortorella, en colaboración con Claude Code · Software libre (GPL-3.0) ·{" "}
+          <a
+            href="https://github.com/pablotortorella/aprendamos-ajedrez"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: COLORS.teal }}
+            className="underline"
+          >
+            código en GitHub
+          </a>
+        </p>
       </footer>
     </div>
   );
