@@ -1,14 +1,13 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   algebraic,
-  cloneBoard,
+  applyMove,
   createEmptyBoard,
   createInitialBoard,
   generateMoves,
   isWhite,
-  pieceType,
 } from "./chess/engine.js";
-import { moveNotation, PIECE_LETTERS } from "./chess/notation.js";
+import { moveNotation, parseMove, resolveMove, PIECE_LETTERS } from "./chess/notation.js";
 import {
   guardarNombres,
   guardarPartida,
@@ -17,7 +16,7 @@ import {
   leerPartida,
   leerPuntos,
 } from "./storage.js";
-import { recortarMientrasEscribe, textoCarta } from "./carta.js";
+import { extraerJugadas, recortarMientrasEscribe, textoCarta } from "./carta.js";
 
 /* ============ Paleta y tipografía ============
    Tema: "Cartero de Ajedrez" — inspirado en la partida por correspondencia
@@ -519,6 +518,52 @@ function agregarJugada(log, turn, notation) {
   return copia;
 }
 
+/**
+ * Reconstruye una partida a partir de un texto pegado (la carta entera, o
+ * sólo la lista de jugadas): arranca de la posición inicial y aplica cada
+ * jugada en orden, la misma forma en que se jugarían a mano.
+ *
+ * Se corta ante la primera jugada que no se entiende o que ninguna pieza
+ * propia puede hacer ahí, y devuelve el motivo en vez de una partida a medio
+ * reconstruir: mejor pedir que se revise el texto que dejar el tablero en un
+ * estado que no corresponde a ninguna carta real.
+ *
+ * @returns {{ partida: object } | { error: string }}
+ */
+function reconstruirPartida(texto) {
+  const jugadas = extraerJugadas(texto);
+  if (jugadas.length === 0) {
+    return { error: "No encontré ninguna jugada en ese texto." };
+  }
+
+  let board = createInitialBoard();
+  let turn = "w";
+  let log = [];
+  let previous = null;
+
+  for (const jugada of jugadas) {
+    for (const texto of [jugada.white, jugada.black]) {
+      if (!texto) continue;
+      const parsed = parseMove(texto);
+      const resolved = parsed && resolveMove(board, turn, parsed);
+      if (!resolved) {
+        return { error: `No pude entender la jugada "${texto}" (número ${jugada.number}).` };
+      }
+      const { board: newBoard, promoted } = applyMove(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol);
+      const notation = moveNotation(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol, {
+        capture: parsed.capture,
+        promoted,
+      });
+      previous = { board, turn, log };
+      log = agregarJugada(log, turn, notation);
+      board = newBoard;
+      turn = turn === "w" ? "b" : "w";
+    }
+  }
+
+  return { partida: { board, turn, log, previous } };
+}
+
 function Level4({ nombres, onCambiarNombres }) {
   // Tablero, turno, jugadas y la posición anterior van en un solo estado: así
   // guardar y deshacer son operaciones atómicas, sin riesgo de que queden
@@ -529,6 +574,9 @@ function Level4({ nombres, onCambiarNombres }) {
   const [copied, setCopied] = useState(false);
   const [confirmandoReinicio, setConfirmandoReinicio] = useState(false);
   const [flipped, setFlipped] = useState(false);
+  const [textoPegado, setTextoPegado] = useState("");
+  const [errorSubida, setErrorSubida] = useState("");
+  const [confirmandoSubida, setConfirmandoSubida] = useState(false);
 
   const { board, turn, log } = partida;
 
@@ -558,22 +606,36 @@ function Level4({ nombres, onCambiarNombres }) {
     setConfirmandoReinicio(false);
   };
 
+  // Reemplaza la partida actual por la que resulte de las jugadas pegadas.
+  // Si ya había una partida en curso, pide confirmación antes de pisarla:
+  // mismo criterio que "Empezar de nuevo".
+  const subirJugadas = () => {
+    const resultado = reconstruirPartida(textoPegado);
+    if (resultado.error) {
+      setErrorSubida(resultado.error);
+      setConfirmandoSubida(false);
+      return;
+    }
+    if (log.length > 0 && !confirmandoSubida) {
+      setErrorSubida("");
+      setConfirmandoSubida(true);
+      return;
+    }
+    setPartida(resultado.partida);
+    setTextoPegado("");
+    setErrorSubida("");
+    setConfirmandoSubida(false);
+    limpiarSeleccion();
+    setCopied(false);
+    setConfirmandoReinicio(false);
+  };
+
   const handleClick = (row, col) => {
     const piece = board[row][col];
     if (selected) {
       const m = moves.find((mv) => mv.row === row && mv.col === col);
       if (m) {
-        const movingPiece = board[selected.row][selected.col];
-        const type = pieceType(movingPiece);
-        let promoted = false;
-        const newBoard = cloneBoard(board);
-        newBoard[selected.row][selected.col] = null;
-        let finalPiece = movingPiece;
-        if (type === "P" && (row === 0 || row === 7)) {
-          finalPiece = turn === "w" ? "Q" : "q";
-          promoted = true;
-        }
-        newBoard[row][col] = finalPiece;
+        const { board: newBoard, promoted } = applyMove(board, selected.row, selected.col, row, col);
         // Se escribe con el tablero PREVIO: la desambiguación necesita ver
         // dónde estaban las otras piezas antes de mover.
         const notation = moveNotation(board, selected.row, selected.col, row, col, {
@@ -760,6 +822,69 @@ function Level4({ nombres, onCambiarNombres }) {
             {copied ? "¡Copiada! ✅" : "Copiar carta"}
           </button>
         )}
+
+        <div className="mt-3 pt-3 not-italic" style={{ borderTop: `1px dashed ${COLORS.gold}` }}>
+          <label style={{ fontFamily: "Nunito" }} className="flex flex-col gap-0.5">
+            <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
+              ¿Te llegó una carta? Pegala acá para seguir la partida
+            </span>
+            <textarea
+              value={textoPegado}
+              onChange={(e) => {
+                setTextoPegado(e.target.value);
+                setErrorSubida("");
+                setConfirmandoSubida(false);
+              }}
+              placeholder={"1. e4  e5\n2. Cf3  Cc6"}
+              rows={3}
+              style={{ fontFamily: "Nunito", border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
+              className="rounded-lg px-2 py-1 text-xs w-full"
+            />
+          </label>
+
+          {errorSubida && (
+            <p style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-[11px] font-bold mt-1">
+              {errorSubida}
+            </p>
+          )}
+
+          {confirmandoSubida ? (
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span style={{ fontFamily: "Nunito", color: COLORS.coral }} className="text-[11px] font-bold">
+                ¿Seguro? Se reemplaza la partida actual
+              </span>
+              <button
+                onClick={subirJugadas}
+                style={{ fontFamily: "Baloo 2", background: COLORS.coral, color: "#fff" }}
+                className="px-3 py-1 rounded-full text-xs font-bold shadow"
+              >
+                Sí, reemplazar
+              </button>
+              <button
+                onClick={() => setConfirmandoSubida(false)}
+                style={{ fontFamily: "Baloo 2", background: COLORS.paperCard, color: COLORS.tealDark }}
+                className="px-3 py-1 rounded-full text-xs font-bold shadow"
+              >
+                No
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={subirJugadas}
+              disabled={!textoPegado.trim()}
+              style={{
+                fontFamily: "Nunito",
+                background: textoPegado.trim() ? COLORS.tealDark : "transparent",
+                color: textoPegado.trim() ? "#fff" : COLORS.inkSoft,
+                border: `1.5px solid ${textoPegado.trim() ? COLORS.tealDark : COLORS.goldSoft}`,
+                cursor: textoPegado.trim() ? "pointer" : "default",
+              }}
+              className="mt-2 px-3 py-1.5 rounded-full text-xs font-bold"
+            >
+              Subir jugadas
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
