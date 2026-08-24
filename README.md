@@ -40,18 +40,24 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
 
 ## Los 5 niveles
 
-1. **Ubicá las casillas** — juego de encontrar la casilla que se pide (por ejemplo `f3`),
+1. **Conocé las piezas** — seis tarjetas (Peón, Caballo, Alfil, Torre, Dama, Rey). Se
+   tocan para expandir y ver valor en puntos, ejemplo de notación y un dato curioso.
+2. **Ubicá las casillas** — juego de encontrar la casilla que se pide (por ejemplo `f3`),
    con puntaje. La casilla se pinta verde si acertás, roja si no, y después de dos
    errores se revela en dorado para no frustrarse.
-2. **Conocé las piezas** — seis tarjetas (Peón, Caballo, Alfil, Torre, Dama, Rey). Se
-   tocan para expandir y ver valor en puntos, ejemplo de notación y un dato curioso.
 3. **Cómo se mueven** — elegís una pieza sobre un tablero vacío, ves todos sus destinos
    posibles marcados en verde, y al tocar uno te muestra cómo se escribe esa jugada.
-4. **Escribí tu carta** — partida jugable completa desde la posición inicial. Cada jugada
-   se va anotando y la app arma sola el texto de la carta, listo para copiar y mandar.
-   La partida se guarda sola (una partida por correspondencia dura semanas), se puede
-   deshacer la última jugada, y empezar de nuevo pide confirmación antes de borrar.
-   Los nombres de quien escribe y quien recibe se cargan ahí mismo y quedan guardados.
+4. **Escribí tu carta** — partida jugable completa desde la posición inicial, con jugadas
+   legales de verdad (no se puede dejar el rey propio en jaque). Cada jugada se va
+   anotando con `+`/`#` si corresponde, y la app arma sola el texto de la carta, listo
+   para copiar y mandar. También se puede:
+   - Girar el tablero (🔄), para ver la partida desde el lado de las negras.
+   - Descargar la posición actual como imagen PNG (📷), para mandarla junto con la carta.
+   - Pegar las jugadas de una carta recibida y que la app reconstruya el tablero, para
+     seguir una partida que se viene jugando por otro canal (por ejemplo WhatsApp).
+   - Deshacer la última jugada, y empezar de nuevo (ambos piden confirmación antes de
+     borrar algo). La partida se guarda sola, y los nombres de quien escribe y quien
+     recibe quedan guardados también.
 5. **Consejos** — carrusel de seis tips estratégicos básicos.
 
 ## Decisiones de diseño (y por qué)
@@ -66,64 +72,66 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
 | Los nombres se cargan desde la app, no están en el código  | Doble motivo: no deja nombres de menores en un repositorio público, y la app queda usable por cualquier familia.            |
 | El saludo de la carta es neutro ("¡Hola Ana!")             | Los nombres los pone quien usa la app, así que no se puede asumir a quién le escribe.                                       |
 
-**Paleta y tipografía** están definidas como tokens al principio de `src/App.jsx`:
-papel verde agua `#EAF2F0`, tablero crema `#F5ECD9` y verde azulado `#2A6F77`, acentos
-dorados de estampilla `#E8A33D`, coral `#E0574C` para errores y capturas. Tipografías
-Baloo 2 (títulos y botones, redondeada para lectura infantil), Nunito (cuerpo) y Caveat
-(solo la carta).
+**Paleta y tipografía** están definidas como tokens en `src/theme.js`: papel verde agua
+`#EAF2F0`, tablero crema `#F5ECD9` y verde azulado `#2A6F77`, acentos dorados de estampilla
+`#E8A33D`, coral `#E0574C` para errores, capturas y jaque. Tipografías Baloo 2 (títulos y
+botones, redondeada para lectura infantil), Nunito (cuerpo) y Caveat (solo la carta).
 
 ## Limitaciones conocidas
 
 Son deliberadas para esta primera versión, no bugs:
 
 - **No hay enroque ni captura al paso.**
-- **No hay detección de jaque ni de jaque mate.**
-- Los movimientos son **pseudo-legales**: la app no valida si una jugada deja al rey
-  propio en jaque. En un contexto de partida amistosa entre chicas y sus papás, esa capa
-  todavía no hace falta.
-- Como consecuencia de lo anterior, la desambiguación puede **aclarar de más**: una pieza
-  clavada cuenta igual como candidata, así que a veces escribe `Cbd2` donde `Cd2` ya
-  alcanzaba. Es el lado seguro del error — de más siempre se entiende, de menos es ambiguo.
 - **Se deshace una sola jugada**, no la partida entera. Es deliberado (ver punto 24 del
   backlog).
 
-Las dos primeras están anotadas también en el pie de la app, para que quede claro dentro
-del producto y no solo en el repo.
+Está anotado también en el pie de la app, para que quede claro dentro del producto y no
+solo en el repo.
 
 El guardado usa `localStorage`, así que vive **en ese navegador y en ese dispositivo**: la
-partida no se sincroniza entre la tablet y la compu.
+partida no se sincroniza entre la tablet y la compu (para eso está "pegar las jugadas de
+una carta", que reconstruye la posición a mano en el dispositivo que haga falta).
 
 ## Estructura
 
 ```
-index.html               Punto de entrada
-public/favicon.svg       Ícono
+index.html                  Punto de entrada
+public/favicon.svg          Ícono
 src/
-  main.jsx               Monta React en el DOM
-  index.css              Tailwind + reset mínimo
-  App.jsx                Interfaz: tokens visuales, contenido y los 5 niveles
-  carta.js               Texto de la carta y limpieza de nombres (sin React)
-  storage.js             Guardado en localStorage, con validación de lo que se lee
-  chess/engine.js        Motor de movimientos (sin React)
-  chess/notation.js      Notación algebraica española (sin React)
-  *.test.js              Tests — se corren con `npm test`
+  main.jsx                  Monta React en el DOM
+  index.css                 Tailwind + reset mínimo
+  App.jsx                   Esqueleto: encabezado, menú de niveles, pie
+  theme.js                  Paleta de colores y tipografías
+  carta.js                  Texto de la carta y limpieza de nombres (sin React)
+  storage.js                Guardado en localStorage, con validación de lo que se lee
+  tableroImagen.js          Dibuja el tablero en un <canvas> y descarga el PNG
+  chess/engine.js           Motor de movimientos, legales y pseudo-legales (sin React)
+  chess/notation.js         Notación algebraica española, escribir y leer (sin React)
+  content/pieces.js         Info de cada pieza (PIECE_INFO) y sus glyphs Unicode
+  content/tips.js           Los seis consejos del nivel 5
+  components/Board.jsx      El tablero: Board y Square
+  components/LevelTab.jsx   Botón de navegación entre niveles
+  levels/Level1.jsx ... 4   Un archivo por nivel jugable
+  levels/LevelTip.jsx       Nivel 5 (consejos)
+  *.test.js                 Tests — se corren con `npm test`
 ```
 
-La regla de la división: **lo que no depende de React vive afuera de `App.jsx`**, porque
-eso es lo que se puede testear sin levantar un navegador.
+La regla de la división: **lo que no depende de React vive afuera de los componentes**,
+porque eso es lo que se puede testear sin levantar un navegador.
 
-- `generateMoves(board, row, col)` — el motor: devuelve los destinos válidos según el
-  tipo de pieza, sin chequear jaque.
+- `generateMoves(board, row, col)` — movimientos pseudo-legales, sin chequear jaque; lo usa
+  el nivel 3 para mostrar cómo se mueve una pieza sola. `generateLegalMoves` es el que
+  filtra las jugadas que dejan al propio rey en jaque, y es el que se usa para jugar de
+  verdad en el nivel 4.
 - `moveNotation(board, ...)` — arma el texto de la jugada. Recibe el tablero **anterior**
-  a la jugada, porque necesita ver las otras piezas para desambiguar.
+  a la jugada, porque necesita ver las otras piezas para desambiguar. `parseMove` +
+  `resolveMove` son el camino inverso: de texto a jugada, para reconstruir una carta pegada.
 - `leerPartida()` / `guardarPartida()` — persistencia. Todo lo que entra se valida: un
   guardado corrupto se descarta y se borra, así no deja la app rota en cada recarga.
-- `textoCarta(log, nombres)` — arma la carta que se copia y se manda.
-- `PIECE_INFO` y `TIPS` en `App.jsx` — todo el contenido de texto está centralizado ahí.
-  Para sumar o corregir contenido no hace falta tocar la UI.
-
-Terminar de dividir la parte de interfaz sigue pendiente (punto 9 del backlog), pero ya
-no es urgente: lo testeable está afuera.
+- `textoCarta(log, nombres)` — arma la carta que se copia y se manda. `extraerJugadas` es
+  el inverso: saca la lista de jugadas de un texto pegado.
+- `PIECE_INFO` (`content/pieces.js`) y `TIPS` (`content/tips.js`) — todo el contenido de
+  texto está centralizado ahí. Para sumar o corregir contenido no hace falta tocar la UI.
 
 ## Qué sigue
 
