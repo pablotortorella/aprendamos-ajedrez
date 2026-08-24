@@ -723,12 +723,19 @@ function Level4({ nombres, onCambiarNombres }) {
       <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
         <div className="flex items-center gap-2">
           <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="font-bold text-sm">
-            Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
             {enJaqueMate ? (
-              <span style={{ color: COLORS.coral }}> · ¡Jaque mate! 🏆</span>
-            ) : enJaque ? (
-              <span style={{ color: COLORS.coral }}> · ¡Jaque! ⚠️</span>
-            ) : null}
+              // En jaque mate no hay "próximo turno": el juego terminó. Ganó
+              // quien acaba de mover, es decir el color contrario al que está
+              // trabado sin jugadas (`turn`).
+              <span style={{ color: COLORS.coral }}>
+                ¡Jaque mate! Ganaron las {turn === "w" ? "Negras" : "Blancas"} {turn === "w" ? "⚫" : "⚪"} 🏆
+              </span>
+            ) : (
+              <>
+                Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
+                {enJaque && <span style={{ color: COLORS.coral }}> · ¡Jaque! ⚠️</span>}
+              </>
+            )}
           </div>
           <button
             onClick={() => setFlipped((f) => !f)}
