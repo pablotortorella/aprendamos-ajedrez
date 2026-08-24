@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Las fuentes (Baloo 2, Nunito, Caveat) las importa el propio componente App.jsx
+   junto con su paleta, para que el archivo siga siendo autocontenido. */
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}

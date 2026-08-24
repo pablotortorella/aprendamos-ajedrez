@@ -1,0 +1,23 @@
+{
+  "name": "aprendamos-ajedrez",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "El Cartero de Ajedrez — tutorial interactivo de notación algebraica española para chicas y chicos.",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.0",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.2"
+  }
+}
