@@ -201,14 +201,20 @@ function Board({
   pieceSize = "text-3xl sm:text-4xl",
   flashSquare,
   revealSquare,
+  flipped = false,
 }) {
   return (
     <div
       style={{ border: `6px solid ${COLORS.tealDark}`, borderRadius: 12, overflow: "hidden", boxShadow: "0 8px 24px rgba(22,78,83,0.25)" }}
       className="grid grid-cols-8 w-full max-w-md mx-auto"
     >
-      {board.map((rowArr, row) =>
-        rowArr.map((piece, col) => {
+      {board.map((rowArr, displayRow) =>
+        rowArr.map((_, displayCol) => {
+          // flipped invierte la posición visual, no la del estado: las jugadas
+          // y la notación siguen viendo siempre las coordenadas reales.
+          const row = flipped ? 7 - displayRow : displayRow;
+          const col = flipped ? 7 - displayCol : displayCol;
+          const piece = board[row][col];
           const dark = (row + col) % 2 === 1;
           const move = legalMoves?.find((m) => m.row === row && m.col === col);
           const isFlash = flashSquare && flashSquare.row === row && flashSquare.col === col;
@@ -522,6 +528,7 @@ function Level4({ nombres, onCambiarNombres }) {
   const [moves, setMoves] = useState([]);
   const [copied, setCopied] = useState(false);
   const [confirmandoReinicio, setConfirmandoReinicio] = useState(false);
+  const [flipped, setFlipped] = useState(false);
 
   const { board, turn, log } = partida;
 
@@ -615,10 +622,26 @@ function Level4({ nombres, onCambiarNombres }) {
   return (
     <div className="flex flex-col lg:flex-row gap-5 items-start justify-center">
       <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
-        <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="font-bold text-sm">
-          Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
+        <div className="flex items-center gap-2">
+          <div style={{ fontFamily: "Baloo 2", color: COLORS.tealDark }} className="font-bold text-sm">
+            Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
+          </div>
+          <button
+            onClick={() => setFlipped((f) => !f)}
+            title="Girar el tablero"
+            aria-label="Girar el tablero"
+            style={{
+              fontFamily: "Baloo 2",
+              background: "transparent",
+              color: COLORS.tealDark,
+              border: `2px solid ${COLORS.goldSoft}`,
+            }}
+            className="w-6 h-6 rounded-full text-xs leading-none shadow-sm"
+          >
+            🔄
+          </button>
         </div>
-        <Board board={board} onSquareClick={handleClick} selectedSquare={selected} legalMoves={moves} />
+        <Board board={board} onSquareClick={handleClick} selectedSquare={selected} legalMoves={moves} flipped={flipped} />
 
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
