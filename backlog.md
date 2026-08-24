@@ -40,6 +40,11 @@ lugar, no se renumera el resto.
   `chess/notation.js` son el inverso exacto de `moveNotation`, `extraerJugadas` en
   `carta.js` es el inverso de `textoCarta`. Pide confirmación antes de reemplazar una
   partida local que ya tenía jugadas, igual que "Empezar de nuevo".
+- **~~7. Detección de jaque~~** — `generateLegalMoves` filtra las jugadas que dejan al
+  propio rey en jaque (`isInCheck` + `isSquareAttacked` en `chess/engine.js`), cerrando el
+  agujero de "comerse el rey". El nivel 4 ahora usa jugadas legales, marca al rey en
+  peligro con un borde coral pulsante, muestra "¡Jaque!" / "¡Jaque mate!" junto al turno, y
+  la notación agrega `+`/`#` automáticamente (también al reconstruir una carta subida).
 - **Publicar en GitHub Pages** — deploy automático por GitHub Actions
   (`.github/workflows/deploy.yml`) en cada push a `main`, en
   https://pablotortorella.github.io/aprendamos-ajedrez/
@@ -62,15 +67,6 @@ va a cambiar: no tiene sentido construir una lección de lectura dentro de la ap
 paso que ya pasa por otro canal. Si en algún momento se necesita reconstruir una posición
 a partir de jugadas pegadas, esa necesidad más chica y concreta quedó capturada en el
 punto 6 — sin la capa de "lección" encima.
-
-### 7. Detección de jaque
-
-Marcar el rey en peligro con un borde coral y escribir el `+` en la notación (y `#` en
-mate). Es el próximo concepto de ajedrez que corresponde aprender, y también hace que las
-cartas sean notacionalmente correctas.
-
-- Implica pasar de movimientos pseudo-legales a legales: filtrar las jugadas que dejan al
-  propio rey en jaque. Es lo que hoy permite "comerse el rey" y que la partida siga.
 
 ---
 
