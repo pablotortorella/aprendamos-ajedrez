@@ -1,4 +1,4 @@
-import { algebraic } from "../chess/engine.js";
+import { algebraic, isWhite } from "../chess/engine.js";
 import { pieceGlyph } from "../content/pieces.js";
 import { COLORS, FONTS } from "../theme.js";
 
@@ -36,6 +36,17 @@ function Square({ dark, children, onClick, highlight, capture, selected, coordLa
           style={{ opacity: 0.9 }}
           className="absolute inset-1 rounded-md animate-pulse border-4 border-cartero-coral"
         />
+      )}
+      {(flash === "bien" || flash === "mal") && (
+        // El acierto/error no se distingue sólo por el color (verde/rojo):
+        // así también funciona para quien no distingue esos colores.
+        <span
+          aria-hidden="true"
+          className="absolute text-2xl sm:text-3xl font-extrabold pointer-events-none"
+          style={{ color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}
+        >
+          {flash === "bien" ? "✓" : "✗"}
+        </span>
       )}
       {coordLabel && (
         <span
@@ -95,7 +106,18 @@ export default function Board({
               correctReveal={isReveal}
               inCheck={isCheck}
             >
-              <span className={pieceSize} style={{ lineHeight: 1 }}>
+              <span
+                className={pieceSize}
+                style={
+                  piece && isWhite(piece)
+                    ? // El glyph blanco es sólo contorno: sobre la casilla clara
+                      // (o cualquier fondo claro) casi no se distingue. Se rellena
+                      // de blanco y se le agrega un trazo oscuro, así se lee sola
+                      // incluso si se mira sin el resto del tablero alrededor.
+                      { lineHeight: 1, color: "#FFFFFF", WebkitTextStroke: `1.5px ${COLORS.tealDark}` }
+                    : { lineHeight: 1 }
+                }
+              >
                 {pieceGlyph(piece)}
               </span>
             </Square>
