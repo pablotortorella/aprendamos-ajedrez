@@ -104,13 +104,18 @@ lugar, no se renumera el resto.
   no expresa bien un color que cambia en tiempo de ejecución sin lógica extra de por medio,
   así que ahí `theme.js` sigue siendo la fuente de verdad. Verificado con capturas antes y
   después en los 5 niveles: pixel a pixel, sin cambios visuales.
-- **~~16. Contraste de las piezas blancas~~** — el glyph blanco ya no se deja sin colorear
-  (con lo cual heredaba el mismo negro/tinta oscura que las piezas negras y ambas se veían
-  casi del mismo color): ahora lleva `color: #FFFFFF` + `-webkit-text-stroke: 1.5px`
-  en el teal oscuro, en `components/Board.jsx`, sólo para las piezas blancas. Se probó
-  antes con `text-shadow` de pocos px como sugería este mismo punto, pero a los tamaños de
-  fuente del tablero el trazo salía demasiado sutil para notarse; el `text-stroke` de
-  ancho fijo da un borde parejo sin importar el tamaño.
+- **~~16. Contraste de las piezas blancas~~** — la causa real no era falta de color: el
+  glyph "blanco" de Unicode (♙♘♗♖♕♔) es un contorno hueco por diseño de la fuente, sin
+  área interior. Pintarlo de blanco no rellena nada — sólo se nota el hueco, y se nota más
+  todavía sobre una casilla oscura (Pablo lo encontró así: en casilla clara se disimulaba,
+  en casilla oscura se veía el hueco transparentando el color de fondo). La primera pasada
+  (`color: #FFFFFF` + `-webkit-text-stroke`) no alcanzaba por esto mismo. La solución real:
+  `pieceGlyph` (`content/pieces.js`) ahora siempre devuelve la forma "negra" de Unicode
+  (♟♞♝♜♛♚, que sí es un área sólida), sea cual sea el color real de la pieza, y
+  `components/Board.jsx` pinta el color encima con CSS. Mismo arreglo en
+  `tableroImagen.js` (la imagen descargable tenía el mismo bug). Los íconos de los niveles
+  2 y 3 —que muestran las piezas por su nombre, no por su tablero— siguen usando el glyph
+  "blanco" hueco a propósito: ahí se ven bien porque nunca se les puso color blanco.
 - **~~17. No comunicar sólo por color~~** — el flash verde/rojo del nivel 1 ahora suma un
   ✓ o una ✗ (blancos, con sombra para leerse sobre cualquiera de los dos colores) encima
   de la casilla, en `components/Board.jsx`. Mismo criterio en éxito y en error, sin tocar
