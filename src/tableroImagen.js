@@ -4,19 +4,15 @@
    chess/engine.js — por eso no tiene tests unitarios, igual que el resto de
    lo que necesita un navegador real (ver backlog #10).
 
-   Los glyphs blancos (♙♘♗...) son de contorno y casi no se ven de por sí:
-   acá se les agrega un trazo oscuro además del relleno, para que la imagen
-   se pueda leer sola cuando se manda por WhatsApp sin el resto de la app
-   alrededor. Es el mismo problema que el backlog #16 marca para la UI en
-   vivo, resuelto acá porque una imagen fija no se puede arreglar después. */
+   Los glyphs "blancos" de Unicode (♙♘♗...) son un contorno hueco por diseño
+   de la fuente, sin área interior: rellenarlos de blanco no pinta nada, sólo
+   se nota el hueco. Por eso acá se usa siempre la forma "negra" (rellena,
+   ♟♞♝♜♛♚) y el color real (blanca o negra) lo pone fillStyle/strokeStyle,
+   igual que en components/Board.jsx (ver backlog #16). */
 
 import { FILES, isWhite, pieceType } from "./chess/engine.js";
 
-// prettier-ignore
-const UNICODE = {
-  wP: "♙", wN: "♘", wB: "♗", wR: "♖", wQ: "♕", wK: "♔",
-  bP: "♟", bN: "♞", bB: "♝", bR: "♜", bQ: "♛", bK: "♚",
-};
+const UNICODE = { P: "♟", N: "♞", B: "♝", R: "♜", Q: "♛", K: "♚" };
 
 const COLOR_CLARA = "#F5ECD9";
 const COLOR_OSCURA = "#2A6F77";
@@ -56,7 +52,7 @@ export function dibujarTablero(canvas, board, { flipped = false, size = 512 } = 
 
       const piece = board[row][col];
       if (!piece) continue;
-      const glyph = UNICODE[(isWhite(piece) ? "w" : "b") + pieceType(piece)];
+      const glyph = UNICODE[pieceType(piece)];
       const cx = x + squareSize / 2;
       const cy = y + squareSize / 2 + squareSize * 0.03;
       ctx.font = `${Math.round(squareSize * 0.72)}px sans-serif`;

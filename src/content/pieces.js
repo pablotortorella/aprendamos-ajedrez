@@ -1,4 +1,3 @@
-import { isWhite } from "../chess/engine.js";
 import { PIECE_LETTERS } from "../chess/notation.js";
 
 /* Los textos de las piezas. Las letras de notación vienen de chess/notation.js
@@ -60,8 +59,18 @@ export const UNICODE = {
   bP: "♟", bN: "♞", bB: "♝", bR: "♜", bQ: "♛", bK: "♚",
 };
 
+/**
+ * Glyph para dibujar la pieza en el tablero (Board.jsx pinta el color con
+ * CSS encima, según isWhite).
+ *
+ * Siempre devuelve la forma "negra" (rellena) de Unicode, sea cual sea el
+ * color real de la pieza: la forma "blanca" (♙♘♗♖♕♔) es un contorno hueco
+ * por diseño de la fuente, sin área interior — pintarla de blanco no rellena
+ * nada, sólo se nota el hueco (más aún sobre una casilla oscura). La forma
+ * "negra" (♟♞♝♜♛♚) sí es un área sólida, así que rellena de verdad sea cual
+ * sea el color que se le ponga por CSS.
+ */
 export const pieceGlyph = (piece) => {
   if (!piece) return "";
-  const color = isWhite(piece) ? "w" : "b";
-  return UNICODE[color + piece.toUpperCase()];
+  return UNICODE["b" + piece.toUpperCase()];
 };
