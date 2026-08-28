@@ -1,13 +1,26 @@
 import { algebraic, isWhite } from "../chess/engine.js";
-import { pieceGlyph } from "../content/pieces.js";
+import { pieceAriaLabel, pieceGlyph } from "../content/pieces.js";
 import { COLORS, FONTS } from "../theme.js";
 
-function Square({ dark, children, onClick, highlight, capture, selected, coordLabel, flash, correctReveal, inCheck }) {
+function Square({
+  dark,
+  children,
+  onClick,
+  highlight,
+  capture,
+  selected,
+  coordLabel,
+  flash,
+  correctReveal,
+  inCheck,
+  ariaLabel,
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={!onClick}
+      aria-label={ariaLabel}
       style={{
         background: dark ? COLORS.darkSquare : COLORS.lightSquare,
         position: "relative",
@@ -99,6 +112,7 @@ export default function Board({
           const isFlash = flashSquare && flashSquare.row === row && flashSquare.col === col;
           const isReveal = revealSquare && revealSquare.row === row && revealSquare.col === col;
           const isCheck = checkSquare && checkSquare.row === row && checkSquare.col === col;
+          const coord = algebraic(row, col);
           return (
             <Square
               key={`${row}-${col}`}
@@ -106,7 +120,8 @@ export default function Board({
               selected={selectedSquare && selectedSquare.row === row && selectedSquare.col === col}
               highlight={!!move}
               capture={move?.capture}
-              coordLabel={showCoords ? algebraic(row, col) : null}
+              coordLabel={showCoords ? coord : null}
+              ariaLabel={`${coord}, ${pieceAriaLabel(piece) ?? "vacía"}`}
               onClick={onSquareClick ? () => onSquareClick(row, col) : undefined}
               flash={isFlash ? flashSquare.result : null}
               correctReveal={isReveal}

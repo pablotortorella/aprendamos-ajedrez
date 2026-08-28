@@ -67,6 +67,14 @@ describe("Level4 — jugar, deshacer, empezar de nuevo", () => {
     expect(screen.getByText(/1\. e4/)).toBeInTheDocument();
   });
 
+  it("cada casilla anuncia su coordenada y contenido para lectores de pantalla", () => {
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+
+    expect(screen.getByRole("button", { name: "e2, Peón blanco" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "e8, Rey negro" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "e4, vacía" })).toBeInTheDocument();
+  });
+
   it("deshacer vuelve a la posición anterior", () => {
     render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
     clickCasilla("e2");

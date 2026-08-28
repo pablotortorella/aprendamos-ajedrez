@@ -1,10 +1,13 @@
+import { isWhite, pieceType } from "../chess/engine.js";
 import { PIECE_LETTERS } from "../chess/notation.js";
 
 /* Los textos de las piezas. Las letras de notación vienen de chess/notation.js
-   para que haya un solo lugar donde estén definidas. */
+   para que haya un solo lugar donde estén definidas. genero es para poder
+   decir "Torre blanca" y no "Torre blanco" en pieceAriaLabel. */
 export const PIECE_INFO = {
   P: {
     name: "Peón",
+    genero: "m",
     letter: PIECE_LETTERS.P,
     desc: "Camina derecho, come en diagonal. ¡Es lento pero de a muchos!",
     value: "1 punto",
@@ -13,6 +16,7 @@ export const PIECE_INFO = {
   },
   N: {
     name: "Caballo",
+    genero: "m",
     letter: PIECE_LETTERS.N,
     desc: "Salta en forma de L. Es el único que salta sobre otras piezas.",
     value: "3 puntos",
@@ -21,6 +25,7 @@ export const PIECE_INFO = {
   },
   B: {
     name: "Alfil",
+    genero: "m",
     letter: PIECE_LETTERS.B,
     desc: "Se mueve en diagonal, siempre por el mismo color de casilla.",
     value: "3 puntos",
@@ -29,6 +34,7 @@ export const PIECE_INFO = {
   },
   R: {
     name: "Torre",
+    genero: "f",
     letter: PIECE_LETTERS.R,
     desc: "Se mueve en línea recta: adelante, atrás o al costado.",
     value: "5 puntos",
@@ -37,6 +43,7 @@ export const PIECE_INFO = {
   },
   Q: {
     name: "Dama",
+    genero: "f",
     letter: PIECE_LETTERS.Q,
     desc: "La más poderosa: combina Torre + Alfil.",
     value: "9 puntos",
@@ -45,6 +52,7 @@ export const PIECE_INFO = {
   },
   K: {
     name: "Rey",
+    genero: "m",
     letter: PIECE_LETTERS.K,
     desc: "Un paso para cualquier lado. ¡Hay que cuidarlo siempre!",
     value: "No tiene puntos",
@@ -73,4 +81,13 @@ export const UNICODE = {
 export const pieceGlyph = (piece) => {
   if (!piece) return "";
   return UNICODE["b" + piece.toUpperCase()];
+};
+
+/** Para lectores de pantalla: "Torre blanca", "Peón negro". null si la casilla está vacía. */
+export const pieceAriaLabel = (piece) => {
+  if (!piece) return null;
+  const info = PIECE_INFO[pieceType(piece)];
+  const blanca = isWhite(piece);
+  const color = info.genero === "f" ? (blanca ? "blanca" : "negra") : blanca ? "blanco" : "negro";
+  return `${info.name} ${color}`;
 };
