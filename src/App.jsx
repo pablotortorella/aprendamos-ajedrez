@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import LevelTab from "./components/LevelTab.jsx";
+import ThemePicker from "./components/ThemePicker.jsx";
 import Level1 from "./levels/Level1.jsx";
 import Level2 from "./levels/Level2.jsx";
 import Level3 from "./levels/Level3.jsx";
 import Level4 from "./levels/Level4.jsx";
 import LevelTip from "./levels/LevelTip.jsx";
-import { guardarNombres, leerNombres } from "./storage.js";
+import { guardarNombres, guardarTema, leerNombres, leerTema } from "./storage.js";
 import { FONTS } from "./theme.js";
 
 export default function App() {
   const [level, setLevel] = useState(1);
   // Los nombres viven acá porque los usan la carta y el encabezado.
   const [nombres, setNombres] = useState(leerNombres);
+  const [tema, setTema] = useState(leerTema);
   // Qué pieza (P/N/B/R/Q/K) mostrar al llegar a "Conocé piezas" o "Cómo se
   // mueven" desde el link cruzado del otro nivel. Level2/Level3 se
   // desmontan al cambiar de pestaña, así que esto sólo necesita sembrar su
@@ -27,6 +29,19 @@ export default function App() {
   useEffect(() => {
     guardarNombres(nombres);
   }, [nombres]);
+
+  // El atributo data-theme en <html> es lo que activa la paleta oscura en
+  // index.css ([data-theme="dark"] { ... }): "estandar" no necesita el
+  // atributo puesto (es lo que da @theme por default), así que se saca del
+  // todo para no dejar data-theme="estandar" dando vueltas sin motivo.
+  useEffect(() => {
+    if (tema === "estandar") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", tema);
+    }
+    guardarTema(tema);
+  }, [tema]);
 
   return (
     <div style={{ minHeight: "100vh", fontFamily: FONTS.nunito }} className="p-4 sm:p-6 bg-cartero-paper">
@@ -45,6 +60,9 @@ export default function App() {
             ? `Aprendé a nombrar las jugadas para escribirle a ${nombres.destinataria}`
             : "Aprendé a nombrar las jugadas para escribirle a quien juega con vos"}
         </p>
+        <div className="mt-3">
+          <ThemePicker tema={tema} onCambiarTema={setTema} />
+        </div>
       </header>
 
       <nav className="max-w-2xl mx-auto flex flex-wrap justify-center gap-2 mb-6">

@@ -10,6 +10,9 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  // document.documentElement es global y no lo toca cleanup(): si un test deja
+  // data-theme puesto, el siguiente test arrancaría con eso ya sucio.
+  document.documentElement.removeAttribute("data-theme");
 });
 
 describe("App — menú", () => {
@@ -63,5 +66,38 @@ describe("App — link cruzado entre 'Conocé piezas' y 'Cómo se mueven'", () =
 
     // Ninguna tarjeta debería quedar abierta sola por la navegación anterior.
     expect(screen.queryByText("Valor:")).not.toBeInTheDocument();
+  });
+});
+
+describe("App — tema", () => {
+  it("arranca sin data-theme puesto (estándar es el default de @theme, no hace falta el atributo)", () => {
+    render(<App />);
+    expect(document.documentElement.getAttribute("data-theme")).toBeNull();
+  });
+
+  it("elegir Oscuro pone data-theme='dark' en <html>, y lo guarda", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Oscuro" }));
+
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(localStorage.getItem("cartero-ajedrez:tema")).toBe("dark");
+  });
+
+  it("volver a Estándar saca el atributo del todo, no lo deja en 'estandar'", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "Oscuro" }));
+    await user.click(screen.getByRole("button", { name: "Estándar" }));
+
+    expect(document.documentElement.getAttribute("data-theme")).toBeNull();
+  });
+
+  it("un tema guardado de una sesión anterior se aplica al arrancar", () => {
+    localStorage.setItem("cartero-ajedrez:tema", "dark");
+    render(<App />);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 });
