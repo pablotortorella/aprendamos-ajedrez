@@ -27,7 +27,7 @@ export default function LevelTip() {
         </p>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => go(-1)}
           style={{ fontFamily: FONTS.baloo }}
@@ -36,7 +36,7 @@ export default function LevelTip() {
         >
           ‹
         </button>
-        <div className="flex gap-1.5">
+        <div className="flex gap-0.5">
           {TIPS.map((_, i) => (
             <button
               key={i}
@@ -44,12 +44,17 @@ export default function LevelTip() {
               onClick={() => setIndex(i)}
               aria-label={`Consejo ${i + 1} de ${TIPS.length}`}
               aria-current={i === index ? "true" : undefined}
-              style={{
-                background: i === index ? COLORS.gold : COLORS.goldSoft,
-                cursor: "pointer",
-              }}
-              className="w-2.5 h-2.5 rounded-full inline-block"
-            />
+              className="w-6 h-6 flex items-center justify-center"
+            >
+              {/* El punto visible sigue chico a propósito (estética de carrusel);
+                  lo que crece es el área táctil del <button> que lo contiene,
+                  para acercarse al mínimo de 24px de WCAG 2.5.8. */}
+              <span
+                aria-hidden="true"
+                style={{ background: i === index ? COLORS.gold : COLORS.goldSoft }}
+                className="w-2.5 h-2.5 rounded-full"
+              />
+            </button>
           ))}
         </div>
         <button

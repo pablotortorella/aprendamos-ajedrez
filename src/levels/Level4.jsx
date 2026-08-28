@@ -272,7 +272,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
   return (
     <div className="flex flex-col lg:flex-row gap-5 items-start justify-center">
       <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-center">
           <div
             role="status"
             aria-live="polite"
@@ -293,34 +293,39 @@ export default function Level4({ nombres, onCambiarNombres }) {
               </>
             )}
           </div>
-          <button
-            onClick={() => setFlipped((f) => !f)}
-            title="Girar el tablero"
-            aria-label="Girar el tablero"
-            style={{
-              fontFamily: FONTS.baloo,
-              background: "transparent",
-              color: COLORS.tealDark,
-              border: `2px solid ${COLORS.goldSoft}`,
-            }}
-            className="w-6 h-6 rounded-full text-xs leading-none shadow-sm"
-          >
-            🔄
-          </button>
-          <button
-            onClick={descargarImagen}
-            title="Descargar imagen del tablero"
-            aria-label="Descargar imagen del tablero"
-            style={{
-              fontFamily: FONTS.baloo,
-              background: "transparent",
-              color: COLORS.tealDark,
-              border: `2px solid ${COLORS.goldSoft}`,
-            }}
-            className="w-6 h-6 rounded-full text-xs leading-none shadow-sm"
-          >
-            📷
-          </button>
+          {/* Agrupados para que envuelvan como una unidad en pantallas angostas:
+              si envolvieran cada uno por su lado, uno de los dos quedaba
+              solo en su propia línea, colgado y sin relación visual con el otro. */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setFlipped((f) => !f)}
+              title="Girar el tablero"
+              aria-label="Girar el tablero"
+              style={{
+                fontFamily: FONTS.baloo,
+                background: "transparent",
+                color: COLORS.tealDark,
+                border: `2px solid ${COLORS.goldSoft}`,
+              }}
+              className="w-8 h-8 rounded-full text-sm leading-none shadow-sm"
+            >
+              🔄
+            </button>
+            <button
+              onClick={descargarImagen}
+              title="Descargar imagen del tablero"
+              aria-label="Descargar imagen del tablero"
+              style={{
+                fontFamily: FONTS.baloo,
+                background: "transparent",
+                color: COLORS.tealDark,
+                border: `2px solid ${COLORS.goldSoft}`,
+              }}
+              className="w-8 h-8 rounded-full text-sm leading-none shadow-sm"
+            >
+              📷
+            </button>
+          </div>
         </div>
         <Board
           board={board}
