@@ -270,8 +270,8 @@ export default function Level4({ nombres, onCambiarNombres }) {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-5 items-start justify-center">
-      <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
+    <div className="flex flex-col md:flex-row gap-5 items-start justify-center">
+      <div className="flex flex-col items-center gap-3 w-full md:w-auto">
         <div className="flex items-center gap-2 flex-wrap justify-center">
           <div
             role="status"
@@ -405,7 +405,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
           border: `2px dashed ${COLORS.gold}`,
           color: COLORS.ink,
         }}
-        className="rounded-2xl p-4 w-full lg:w-72 shadow-md"
+        className="rounded-2xl p-4 w-full md:w-72 shadow-md"
       >
         <p style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="text-sm font-bold mb-2 not-italic">
           ✉️ Tu carta{nombres.destinataria ? ` para ${nombres.destinataria}` : ""}
