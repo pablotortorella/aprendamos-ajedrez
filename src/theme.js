@@ -1,32 +1,57 @@
 /* ============ Paleta y tipografía ============
    Tema: "Cartero de Ajedrez" — inspirado en la partida por correspondencia
    por correspondencia que le da origen. Tablero tipo sello postal, acentos dorados
-   de estampilla, y una "carta" que se puede copiar y mandar de verdad. */
+   de estampilla, y una "carta" que se puede copiar y mandar de verdad.
+
+   Los valores de verdad viven en `index.css` (bloque @theme + [data-theme="dark"]):
+   son variables CSS de verdad, no sólo tokens de Tailwind — por eso acá cada
+   entrada es `var(--color-cartero-x)` y no un hex fijo. Así, el mismo
+   `style={{ color: COLORS.ink }}` que ya se usa en toda la app responde solo
+   al tema activo (según el atributo `data-theme` del `<html>`), sin tener que
+   tocar un solo componente cuando se agrega un tema nuevo — sólo hace falta
+   sumar un bloque de variables en index.css y una entrada en THEMES, más
+   abajo. */
 
 export const COLORS = {
-  paper: "#EAF2F0",
-  paperCard: "#FFFFFF",
-  ink: "#1F3A3E",
-  inkSoft: "#4C6B6E",
-  teal: "#1F6F76",
-  tealDark: "#164E53",
-  lightSquare: "#F5ECD9",
-  darkSquare: "#2A6F77",
-  gold: "#E8A33D",
-  goldSoft: "#F6D8A0",
-  coral: "#E0574C",
-  moveHint: "#7FBF8F",
-  // Versiones oscurecidas de gold/coral, sólo para texto: las versiones
-  // normales dan bien como acento (fondos, bordes, estados seleccionados),
-  // pero como texto sobre blanco no llegan al contraste 4.5:1 de WCAG AA
-  // (gold da 2.16:1, coral 3.27-3.73:1 según el fondo real) — se nota poco
-  // en un texto grande, pero las letras y números que se están aprendiendo
-  // a leer merecen el contraste completo. Calculado para pasar 4.5:1 contra
-  // los tres fondos reales de la app (paper, paperCard, y el semitransparente
-  // de <main>): gold al 60% de su brillo, coral al 80%.
-  goldDark: "#8B6225",
-  coralDark: "#B3463D",
+  paper: "var(--color-cartero-paper)",
+  paperCard: "var(--color-cartero-paper-card)",
+  ink: "var(--color-cartero-ink)",
+  inkSoft: "var(--color-cartero-ink-soft)",
+  teal: "var(--color-cartero-teal)",
+  tealDark: "var(--color-cartero-teal-dark)",
+  lightSquare: "var(--color-cartero-square-light)",
+  darkSquare: "var(--color-cartero-square-dark)",
+  gold: "var(--color-cartero-gold)",
+  goldSoft: "var(--color-cartero-gold-soft)",
+  coral: "var(--color-cartero-coral)",
+  moveHint: "var(--color-cartero-move-hint)",
+  // Versiones de gold/coral sólo para texto (ver #30 del backlog): las
+  // normales no llegan al contraste 4.5:1 de WCAG AA sobre fondos claros.
+  // Bordes y fondos decorativos siguen usando gold/coral tal cual, que ahí
+  // sólo necesitan 3:1.
+  goldDark: "var(--color-cartero-gold-dark)",
+  coralDark: "var(--color-cartero-coral-dark)",
+  // Coral que se mantiene oscuro en cualquier tema: para fondos de botón con
+  // texto blanco encima ("Sí, borrar"). coralDark de arriba no sirve para
+  // este rol porque en el tema oscuro se aclara (para leerse como texto
+  // sobre fondo oscuro), y un fondo de botón claro con texto blanco no se lee.
+  coralStrong: "var(--color-cartero-coral-strong)",
+  // Piezas: ver el comentario largo en index.css — son colores de identidad
+  // de la pieza, no de UI, así que no se aclaran/oscurecen con el tema.
+  pieceInk: "var(--color-cartero-piece-ink)",
+  pieceInkStroke: "var(--color-cartero-piece-ink-stroke)",
+  pieceWhiteStroke: "var(--color-cartero-piece-white-stroke)",
 };
+
+/**
+ * Los temas disponibles, con el emoji que los representa en el selector.
+ * "estandar" es el default y el único que existía antes de sumar esto — el
+ * peón negro por lo que ya es: la pieza, sin ningún filtro de color encima.
+ */
+export const THEMES = [
+  { id: "estandar", emoji: "♟️", label: "Estándar" },
+  { id: "dark", emoji: "🌙", label: "Oscuro" },
+];
 
 // Las fuentes (Baloo 2, Nunito, Caveat) están auto-hospedadas con @fontsource
 // y se cargan en main.jsx: la app no depende de Google Fonts por internet.

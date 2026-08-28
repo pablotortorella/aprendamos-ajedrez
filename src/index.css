@@ -28,11 +28,68 @@
   --color-cartero-gold-soft: #f6d8a0;
   --color-cartero-coral: #e0574c;
   --color-cartero-move-hint: #7fbf8f;
-  /* Sólo para el anillo de foco de teclado: probado a mano contra las dos
-     casillas del tablero (clara y oscura) porque teal y gold, que ya usa la
-     paleta, se pierden contra la casilla oscura o quedan pisando otro
-     significado (seleccionada, jaque/captura). */
-  --color-cartero-focus: #1a2a6c;
+  /* Variantes de gold/coral sólo para TEXTO (ver #30 en el backlog): las
+     normales no llegan a 4.5:1 de contraste sobre blanco. Bordes y fondos
+     decorativos siguen usando gold/coral tal cual, que ahí sólo necesitan 3:1. */
+  --color-cartero-gold-dark: #8b6225;
+  --color-cartero-coral-dark: #b3463d;
+  /* Coral que se mantiene oscuro en los dos temas: para fondos de botón con
+     texto blanco encima ("Sí, borrar"), un rol distinto del texto (coral-dark
+     de arriba, que en el tema oscuro se aclara para leerse sobre fondo oscuro
+     y por eso no serviría como fondo de botón). */
+  --color-cartero-coral-strong: #b3463d;
+  /* Piezas: colores fijos, no ligados al tema. Una pieza negra sigue "siendo
+     negra" tenga la app el tema que tenga — no es un rol de UI que deba
+     aclararse en modo oscuro, es identidad de la pieza. pieceInkStroke es un
+     trazo extra en las piezas negras (para leerse en casillas oscuras); acá
+     coincide con el relleno a propósito, así no se nota nada distinto. */
+  --color-cartero-piece-ink: #141726;
+  --color-cartero-piece-ink-stroke: #141726;
+  --color-cartero-piece-white-stroke: #164e53;
+}
+
+/* El anillo de foco de teclado (Board.jsx) no usa una sola variable de color:
+   ningún color único da suficiente contraste contra las DOS casillas del
+   tablero a la vez en todos los temas (lo probé a mano con la fórmula de
+   WCAG — para el tema oscuro, ninguno de una decena de candidatos pasaba
+   3:1 contra ambas). En vez de ajustar el color por tema para siempre, se
+   usa un halo de dos aros (blanco + oscuro, con ring/ring-offset): no
+   depende de contrastar con lo que hay debajo, sólo de que los dos aros
+   contrasten ENTRE SÍ — así funciona en cualquier tema, incluidos los que
+   todavía no existen. */
+
+/* ============ Tema oscuro ("luna") ============
+   Mismo criterio de diseño que el tema claro, pero verificado aparte: cada
+   par texto/fondo real de la app vuelve a pasar por la fórmula de contraste
+   de WCAG (no es sólo "invertir los colores"). El tablero es la excepción a
+   "todo se oscurece": casillas clara/oscura se mantienen en un rango de
+   luminosidad parecido al tema claro (sólo cambia el matiz, de verde azulado
+   a índigo nocturno) porque las piezas dependen de esa distancia de brillo
+   para leerse — si el tablero se oscurece del todo, una pieza negra
+   desaparece contra una casilla oscura. */
+[data-theme="dark"] {
+  --color-cartero-paper: #10151c;
+  --color-cartero-paper-card: #2a3a4a;
+  --color-cartero-ink: #e9eef5;
+  --color-cartero-ink-soft: #a9b6c9;
+  --color-cartero-teal: #257078;
+  --color-cartero-teal-dark: #7fdce2;
+  --color-cartero-square-light: #c7cce3;
+  --color-cartero-square-dark: #333868;
+  --color-cartero-gold: #e8a33d;
+  --color-cartero-gold-soft: #f6d8a0;
+  --color-cartero-coral: #ff8a7e;
+  --color-cartero-move-hint: #8fcf9b;
+  --color-cartero-gold-dark: #f6c976;
+  --color-cartero-coral-dark: #ffaa9f;
+  --color-cartero-coral-strong: #b3463d;
+  /* Las piezas negras se aclaran un toque: en el tema claro (casilla oscura
+     bastante clara todavía, #2a6f77) un negro casi puro ya se leía; la
+     casilla oscura nocturna (#333868) es más oscura, así que el relleno de
+     las piezas negras también lo es un poco menos para no perder el margen. */
+  --color-cartero-piece-ink: #0a0c14;
+  --color-cartero-piece-ink-stroke: #c7cce3;
+  --color-cartero-piece-white-stroke: #141726;
 }
 
 html,
