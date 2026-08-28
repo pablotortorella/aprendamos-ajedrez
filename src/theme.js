@@ -24,7 +24,12 @@ export const COLORS = {
   gold: "var(--color-cartero-gold)",
   goldSoft: "var(--color-cartero-gold-soft)",
   coral: "var(--color-cartero-coral)",
-  moveHint: "var(--color-cartero-move-hint)",
+  // El punto de "movimiento legal" (Board.jsx) tiene un verde por tipo de
+  // casilla, no uno solo: mismo problema que el anillo de foco (un verde que
+  // se lea bien en la clara es demasiado oscuro para la oscura), pero acá sí
+  // alcanza con elegir por casilla en vez de necesitar un halo.
+  moveHintOnLight: "var(--color-cartero-move-hint-on-light)",
+  moveHintOnDark: "var(--color-cartero-move-hint-on-dark)",
   // Versiones de gold/coral sólo para texto (ver #30 del backlog): las
   // normales no llegan al contraste 4.5:1 de WCAG AA sobre fondos claros.
   // Bordes y fondos decorativos siguen usando gold/coral tal cual, que ahí

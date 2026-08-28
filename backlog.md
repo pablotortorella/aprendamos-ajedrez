@@ -296,6 +296,18 @@ accesibilidad de #15 sigue sólido bajo un flujo de juego real.)*
   Verificado a mano en los 5 niveles, en los 4 anchos ya usados para el resto de la app, y
   la persistencia entre recargas.
 
+  **Ajuste al toque (mismo día):** Pablo notó que el punto verde de "movimiento legal"
+  casi no se veía en la casilla clara del tema oscuro. Medido: 1.14:1 — y de paso salió
+  que en el tema ESTÁNDAR original tampoco estaba muy bien (1.83:1 y 2.68:1 según la
+  casilla), sólo que pasaba más desapercibido. Mismo problema que el anillo de foco (un
+  verde no puede contrastar bien contra las dos casillas a la vez), pero acá sí alcanzaba
+  con un color por casilla en vez de necesitar un halo: `move-hint-on-light` (verde
+  oscuro, #166b34) para casilla clara, `move-hint-on-dark` (verde pálido, #b6f2c2) para
+  la oscura — los mismos dos valores funcionan en los dos temas, verificado contra las
+  cuatro combinaciones reales (clara/oscura × estándar/oscuro), así que no hizo falta que
+  cambien con `[data-theme="dark"]`. De paso quedó más lindo en los dos temas, no sólo
+  arreglado en el oscuro.
+
 ### Temas pendientes: verde, rosa/violeta, azul
 
 Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol), 🦄 rosa y

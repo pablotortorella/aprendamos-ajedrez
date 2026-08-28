@@ -27,7 +27,15 @@
   --color-cartero-gold: #e8a33d;
   --color-cartero-gold-soft: #f6d8a0;
   --color-cartero-coral: #e0574c;
-  --color-cartero-move-hint: #7fbf8f;
+  /* El punto verde de "movimiento legal" (Board.jsx) no es un solo color: un
+     verde que se lea bien en la casilla clara es demasiado oscuro para la
+     oscura, y viceversa — mismo problema que el anillo de foco, pero acá sí
+     hay margen para un color por casilla en vez de un halo. Se probaron
+     contra las CUATRO combinaciones reales (casilla clara/oscura de cada
+     tema): los mismos dos valores sirven en los dos temas, así que no hace
+     falta que cambien con [data-theme="dark"]. */
+  --color-cartero-move-hint-on-light: #166b34;
+  --color-cartero-move-hint-on-dark: #b6f2c2;
   /* Variantes de gold/coral sólo para TEXTO (ver #30 en el backlog): las
      normales no llegan a 4.5:1 de contraste sobre blanco. Bordes y fondos
      decorativos siguen usando gold/coral tal cual, que ahí sólo necesitan 3:1. */
@@ -79,7 +87,6 @@
   --color-cartero-gold: #e8a33d;
   --color-cartero-gold-soft: #f6d8a0;
   --color-cartero-coral: #ff8a7e;
-  --color-cartero-move-hint: #8fcf9b;
   --color-cartero-gold-dark: #f6c976;
   --color-cartero-coral-dark: #ffaa9f;
   --color-cartero-coral-strong: #b3463d;

@@ -46,7 +46,10 @@ function Square({
     >
       {children}
       {highlight && !capture && (
-        <div style={{ opacity: 0.85 }} className="absolute rounded-full w-1/3 h-1/3 bg-cartero-move-hint" />
+        <div
+          style={{ opacity: 0.85, background: dark ? COLORS.moveHintOnDark : COLORS.moveHintOnLight }}
+          className="absolute rounded-full w-1/3 h-1/3"
+        />
       )}
       {capture && (
         <div style={{ opacity: 0.9 }} className="absolute inset-1 rounded-md border-4 border-cartero-coral" />
