@@ -1,13 +1,21 @@
 // @vitest-environment jsdom
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { LARGO_MAXIMO_NOMBRE } from "../carta.js";
 import { applyMove, createEmptyBoard, createInitialBoard } from "../chess/engine.js";
 import { guardarPartida } from "../storage.js";
 import Level4 from "./Level4.jsx";
 
 const nombres = { remitente: "", destinataria: "" };
 const sinCambiarNombres = () => {};
+
+/** Los tests de más abajo tocan tests reales de tipeo: hace falta que el input sea controlado de verdad. */
+function Level4Controlado() {
+  const [nombres, setNombres] = useState({ remitente: "", destinataria: "" });
+  return <Level4 nombres={nombres} onCambiarNombres={setNombres} />;
+}
 
 /** Clickea una casilla por su coordenada (el label que ya se ve en el tablero). */
 const clickCasilla = (casilla) => fireEvent.click(screen.getByText(casilla));
@@ -180,5 +188,30 @@ describe("Level4 — copiar la carta cuando falla el portapapeles", () => {
     fireEvent.click(screen.getByRole("button", { name: "Copiar carta" }));
 
     expect(await screen.findByText(/No se pudo copiar sola/)).toBeInTheDocument();
+  });
+});
+
+describe("Level4 — límite de largo del nombre", () => {
+  it("no deja escribir más de LARGO_MAXIMO_NOMBRE caracteres", async () => {
+    const user = userEvent.setup();
+    render(<Level4Controlado />);
+
+    const input = screen.getByPlaceholderText("Su nombre");
+    await user.type(input, "Maria Guadalupe Esperanza de los Angeles");
+
+    expect(input.value.length).toBe(LARGO_MAXIMO_NOMBRE);
+    expect(input).toHaveAttribute("maxLength", String(LARGO_MAXIMO_NOMBRE));
+  });
+
+  it("muestra un contador sólo cuando el nombre se acerca al límite", async () => {
+    const user = userEvent.setup();
+    render(<Level4Controlado />);
+
+    const input = screen.getByPlaceholderText("Su nombre");
+    await user.type(input, "Ana");
+    expect(screen.queryByText(/\/24/)).not.toBeInTheDocument();
+
+    await user.type(input, " Guadalupe Esperanza");
+    expect(screen.getByText(`${input.value.length}/${LARGO_MAXIMO_NOMBRE}`)).toBeInTheDocument();
   });
 });

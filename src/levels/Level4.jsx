@@ -10,7 +10,7 @@ import {
 } from "../chess/engine.js";
 import { moveNotation, parseMove, resolveMove } from "../chess/notation.js";
 import Board from "../components/Board.jsx";
-import { extraerJugadas, recortarMientrasEscribe, textoCarta } from "../carta.js";
+import { extraerJugadas, LARGO_MAXIMO_NOMBRE, recortarMientrasEscribe, textoCarta } from "../carta.js";
 import { guardarPartida, leerPartida } from "../storage.js";
 import { descargarTableroComoImagen } from "../tableroImagen.js";
 import { COLORS, FONTS } from "../theme.js";
@@ -416,9 +416,15 @@ export default function Level4({ nombres, onCambiarNombres }) {
               value={nombres.destinataria}
               onChange={(e) => onCambiarNombres({ ...nombres, destinataria: recortarMientrasEscribe(e.target.value) })}
               placeholder="Su nombre"
+              maxLength={LARGO_MAXIMO_NOMBRE}
               style={{ fontFamily: FONTS.nunito, border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
+            {nombres.destinataria.length >= LARGO_MAXIMO_NOMBRE - 5 && (
+              <span style={{ color: COLORS.gold, fontFamily: FONTS.nunito }} className="text-[10px] self-end">
+                {nombres.destinataria.length}/{LARGO_MAXIMO_NOMBRE}
+              </span>
+            )}
           </label>
           <label style={{ fontFamily: FONTS.nunito }} className="flex flex-col gap-0.5">
             <span style={{ color: COLORS.inkSoft }} className="text-[11px] font-bold">
@@ -429,9 +435,15 @@ export default function Level4({ nombres, onCambiarNombres }) {
               value={nombres.remitente}
               onChange={(e) => onCambiarNombres({ ...nombres, remitente: recortarMientrasEscribe(e.target.value) })}
               placeholder="Tu nombre"
+              maxLength={LARGO_MAXIMO_NOMBRE}
               style={{ fontFamily: FONTS.nunito, border: `1.5px solid ${COLORS.goldSoft}`, color: COLORS.ink }}
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
+            {nombres.remitente.length >= LARGO_MAXIMO_NOMBRE - 5 && (
+              <span style={{ color: COLORS.gold, fontFamily: FONTS.nunito }} className="text-[10px] self-end">
+                {nombres.remitente.length}/{LARGO_MAXIMO_NOMBRE}
+              </span>
+            )}
           </label>
         </div>
         <pre
