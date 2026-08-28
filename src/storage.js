@@ -10,10 +10,12 @@
    que entra se valida, y ante la menor duda se descarta y se arranca de cero. */
 
 import { limpiarNombre } from "./carta.js";
+import { THEMES } from "./theme.js";
 
 const CLAVE_PARTIDA = "cartero-ajedrez:partida";
 const CLAVE_PUNTOS = "cartero-ajedrez:puntos-nivel1";
 const CLAVE_NOMBRES = "cartero-ajedrez:nombres";
+const CLAVE_TEMA = "cartero-ajedrez:tema";
 
 /** Si el formato guardado cambia, subir este número invalida lo viejo. */
 const VERSION = 1;
@@ -227,6 +229,31 @@ export function guardarNombres(nombres) {
         destinataria: limpiarNombre(nombres?.destinataria),
       }),
     );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const IDS_DE_TEMA_VALIDOS = new Set(THEMES.map((t) => t.id));
+
+/** El tema elegido, o "estandar" si no hay nada guardado o lo guardado no es un tema real. */
+export function leerTema() {
+  const store = almacen();
+  if (!store) return "estandar";
+  try {
+    const tema = store.getItem(CLAVE_TEMA);
+    return IDS_DE_TEMA_VALIDOS.has(tema) ? tema : "estandar";
+  } catch {
+    return "estandar";
+  }
+}
+
+export function guardarTema(tema) {
+  const store = almacen();
+  if (!store || !IDS_DE_TEMA_VALIDOS.has(tema)) return false;
+  try {
+    store.setItem(CLAVE_TEMA, tema);
     return true;
   } catch {
     return false;

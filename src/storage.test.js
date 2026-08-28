@@ -7,9 +7,11 @@ import {
   guardarNombres,
   guardarPartida,
   guardarPuntos,
+  guardarTema,
   leerNombres,
   leerPartida,
   leerPuntos,
+  leerTema,
 } from "./storage.js";
 
 /** localStorage de mentira, para no depender de un navegador en los tests. */
@@ -244,5 +246,33 @@ describe("puntaje", () => {
       globalThis.localStorage.setItem("cartero-ajedrez:puntos-nivel1", basura);
       expect(leerPuntos()).toBe(0);
     }
+  });
+});
+
+describe("tema", () => {
+  it("sin nada guardado, arranca en 'estandar'", () => {
+    expect(leerTema()).toBe("estandar");
+  });
+
+  it("guarda y lee el tema elegido", () => {
+    guardarTema("dark");
+    expect(leerTema()).toBe("dark");
+  });
+
+  it("un valor que no es un tema real cae en 'estandar'", () => {
+    globalThis.localStorage.setItem("cartero-ajedrez:tema", "unicornio-todavia-no-existe");
+    expect(leerTema()).toBe("estandar");
+  });
+
+  it("guardar un tema que no existe no hace nada (no pisa el que ya había)", () => {
+    guardarTema("dark");
+    expect(guardarTema("fantasia")).toBe(false);
+    expect(leerTema()).toBe("dark");
+  });
+
+  it("sin localStorage no rompe: lee 'estandar' y guardar da false", () => {
+    globalThis.localStorage = undefined;
+    expect(leerTema()).toBe("estandar");
+    expect(guardarTema("dark")).toBe(false);
   });
 });
