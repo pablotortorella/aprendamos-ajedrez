@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { applyMove, createInitialBoard } from "../chess/engine.js";
+import { applyMove, createEmptyBoard, createInitialBoard } from "../chess/engine.js";
 import { guardarPartida } from "../storage.js";
 import Level4 from "./Level4.jsx";
 
@@ -131,6 +131,34 @@ describe("Level4 — se recupera de localStorage al montar", () => {
 
     expect(screen.getByText(/Juegan las Negras/)).toBeInTheDocument();
     expect(screen.getByText(/1\. e4/)).toBeInTheDocument();
+  });
+});
+
+describe("Level4 — turno y jaque anunciados por voz (aria-live)", () => {
+  it("el turno vive en una región aria-live, para que un lector de pantalla avise cuando cambia", () => {
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+    const estado = screen.getByRole("status");
+    expect(estado).toHaveTextContent("Juegan las Blancas");
+
+    clickCasilla("e2");
+    clickCasilla("e4");
+
+    expect(estado).toHaveTextContent("Juegan las Negras");
+  });
+
+  it("el jaque se anuncia en la misma región, sin depender de mirar el tablero", () => {
+    // Torre blanca en e1 haciendo jaque al rey negro en e8 por la columna e:
+    // no hace falta una partida legal completa, sólo una posición en jaque.
+    const boardEnJaque = createEmptyBoard();
+    boardEnJaque[0][4] = "k";
+    boardEnJaque[7][4] = "R";
+    guardarPartida({ board: boardEnJaque, turn: "b", log: [], previous: null });
+
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+
+    const estado = screen.getByRole("status");
+    expect(estado).toHaveTextContent("Juegan las Negras");
+    expect(estado).toHaveTextContent("¡Jaque!");
   });
 });
 

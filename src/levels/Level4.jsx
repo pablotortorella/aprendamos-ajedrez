@@ -273,7 +273,12 @@ export default function Level4({ nombres, onCambiarNombres }) {
     <div className="flex flex-col lg:flex-row gap-5 items-start justify-center">
       <div className="flex flex-col items-center gap-3 w-full lg:w-auto">
         <div className="flex items-center gap-2">
-          <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="font-bold text-sm">
+          <div
+            role="status"
+            aria-live="polite"
+            style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }}
+            className="font-bold text-sm"
+          >
             {enJaqueMate ? (
               // En jaque mate no hay "próximo turno": el juego terminó. Ganó
               // quien acaba de mover, es decir el color contrario al que está
