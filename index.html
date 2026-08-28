@@ -4,11 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <meta name="theme-color" content="#164E53" />
     <meta
       name="description"
       content="El Cartero de Ajedrez: aprendé la notación algebraica española jugando, para escribir tus jugadas por correspondencia."
     />
     <title>El Cartero de Ajedrez</title>
+
+    <!-- Open Graph / Twitter Card: a diferencia del resto del build (base: "./",
+         para andar servido desde cualquier subcarpeta), estas URLs van
+         absolutas a propósito — los scrapers de WhatsApp/redes que arman la
+         vista previa al compartir el link no resuelven rutas relativas. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="El Cartero de Ajedrez" />
+    <meta
+      property="og:description"
+      content="Aprendé la notación algebraica y jugá al ajedrez por correspondencia con quien quieras."
+    />
+    <meta property="og:url" content="https://pablotortorella.github.io/aprendamos-ajedrez/" />
+    <meta property="og:image" content="https://pablotortorella.github.io/aprendamos-ajedrez/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="El Cartero de Ajedrez" />
+    <meta
+      name="twitter:description"
+      content="Aprendé la notación algebraica y jugá al ajedrez por correspondencia con quien quieras."
+    />
+    <meta name="twitter:image" content="https://pablotortorella.github.io/aprendamos-ajedrez/og-image.png" />
   </head>
   <body>
     <div id="root"></div>
