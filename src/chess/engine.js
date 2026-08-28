@@ -90,14 +90,70 @@ const ORTH = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 const KNIGHT_OFFSETS = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
 const KING_OFFSETS = [...DIAG, ...ORTH];
 
+/** Estado inicial de los derechos de enroque: los cuatro lados todavía disponibles. */
+export function initialCastlingRights() {
+  return { wK: true, wQ: true, bK: true, bQ: true };
+}
+
+/**
+ * Los derechos de enroque se pierden para siempre, no se recuperan: si el rey
+ * o esa torre se movieron alguna vez (o la torre fue comida en su propia
+ * casilla de origen), ya no se puede enrocar de ese lado aunque una pieza
+ * vuelva a esa casilla más tarde. Por eso hace falta guardarlos aparte del
+ * tablero: la posición sola no alcanza para saber si "todavía se puede".
+ */
+function updateCastlingRights(rights, fromRow, fromCol, toRow, toCol) {
+  if (!rights) return rights;
+  const next = { ...rights };
+  const perder = (r, c) => {
+    if (r === 7 && c === 4) {
+      next.wK = false;
+      next.wQ = false;
+    } else if (r === 0 && c === 4) {
+      next.bK = false;
+      next.bQ = false;
+    } else if (r === 7 && c === 0) next.wQ = false;
+    else if (r === 7 && c === 7) next.wK = false;
+    else if (r === 0 && c === 0) next.bQ = false;
+    else if (r === 0 && c === 7) next.bK = false;
+  };
+  perder(fromRow, fromCol); // la pieza se movió desde ahí
+  perder(toRow, toCol); // o la comieron ahí
+  return next;
+}
+
+/**
+ * La casilla que un peón rival podría capturar al paso en la PRÓXIMA jugada.
+ * Sólo existe justo después de que un peón avanza dos casillas, y dura una
+ * sola jugada: se recalcula desde cero en cada movimiento (no se "apaga" a
+ * mano), así que cualquier otra jugada la borra sola.
+ */
+function nextEnPassantTarget(piece, fromRow, fromCol, toRow) {
+  if (pieceType(piece) === "P" && Math.abs(toRow - fromRow) === 2) {
+    return { row: (fromRow + toRow) / 2, col: fromCol };
+  }
+  return null;
+}
+
 /**
  * Aplica un movimiento y devuelve el tablero resultante (no muta el original).
  * Corona automáticamente a Dama: es la única coronación que la app conoce.
  *
+ * El enroque (el rey se mueve 2 casillas) y la captura al paso (un peón se
+ * mueve en diagonal a una casilla vacía) no hace falta señalarlos aparte: en
+ * una jugada legal esa forma sólo puede significar eso, así que se detectan
+ * solos mirando la geometría del movimiento.
+ *
+ * `castling` es opcional: si no llega, el `castling` devuelto también es
+ * `undefined` (isSquareAttacked/generateLegalMoves llaman así, porque sólo
+ * les importa el tablero resultante). El `enPassant` devuelto no necesita
+ * ningún estado anterior como entrada: siempre se puede calcular de cero
+ * mirando nada más esta jugada.
+ *
  * No valida legalidad ni que la jugada exista: eso es responsabilidad de quien
  * llama (el click en el tablero, o el que reconstruye una partida pegada).
  */
-export function applyMove(board, fromRow, fromCol, toRow, toCol) {
+export function applyMove(board, fromRow, fromCol, toRow, toCol, castling) {
   const piece = board[fromRow][fromCol];
   const type = pieceType(piece);
   const white = isWhite(piece);
@@ -105,19 +161,86 @@ export function applyMove(board, fromRow, fromCol, toRow, toCol) {
   newBoard[fromRow][fromCol] = null;
   let finalPiece = piece;
   let promoted = false;
+
+  if (type === "K" && Math.abs(toCol - fromCol) === 2) {
+    // Enroque: la torre salta al lado opuesto del rey, en la misma jugada.
+    const rookFromCol = toCol > fromCol ? 7 : 0;
+    const rookToCol = toCol > fromCol ? toCol - 1 : toCol + 1;
+    newBoard[fromRow][rookToCol] = newBoard[fromRow][rookFromCol];
+    newBoard[fromRow][rookFromCol] = null;
+  }
+
+  if (type === "P" && toCol !== fromCol && !board[toRow][toCol]) {
+    // Captura al paso: el peón comido queda al lado del destino, no en él.
+    newBoard[fromRow][toCol] = null;
+  }
+
   if (type === "P" && (toRow === 0 || toRow === 7)) {
     finalPiece = white ? "Q" : "q";
     promoted = true;
   }
   newBoard[toRow][toCol] = finalPiece;
-  return { board: newBoard, promoted };
+
+  return {
+    board: newBoard,
+    promoted,
+    castling: updateCastlingRights(castling, fromRow, fromCol, toRow, toCol),
+    enPassant: nextEnPassantTarget(piece, fromRow, fromCol, toRow),
+  };
+}
+
+/**
+ * Agrega al enroque a `moves` si están dadas las condiciones: derecho
+ * todavía vigente, casillas del medio vacías, la torre en su lugar, y ni la
+ * casilla de salida ni las que el rey cruza están atacadas (no se puede
+ * enrocar estando en jaque, ni "pasando por" un jaque).
+ */
+function appendCastlingMoves(board, row, col, white, rights, moves) {
+  if (!rights) return;
+  const homeRow = white ? 7 : 0;
+  if (row !== homeRow || col !== 4) return;
+  const enemigoEsBlanco = !white;
+  const torreDelColor = white ? "R" : "r";
+
+  // No se puede enrocar estando en jaque: se chequea una sola vez para los
+  // dos lados, ya que la casilla de salida (columna 4) es la misma.
+  if (isSquareAttacked(board, homeRow, 4, enemigoEsBlanco)) return;
+
+  const derechoCorto = white ? rights.wK : rights.bK;
+  if (
+    derechoCorto &&
+    !board[homeRow][5] &&
+    !board[homeRow][6] &&
+    board[homeRow][7] === torreDelColor &&
+    !isSquareAttacked(board, homeRow, 5, enemigoEsBlanco) &&
+    !isSquareAttacked(board, homeRow, 6, enemigoEsBlanco)
+  ) {
+    moves.push({ row: homeRow, col: 6, capture: false });
+  }
+
+  const derechoLargo = white ? rights.wQ : rights.bQ;
+  if (
+    derechoLargo &&
+    !board[homeRow][1] &&
+    !board[homeRow][2] &&
+    !board[homeRow][3] &&
+    board[homeRow][0] === torreDelColor &&
+    !isSquareAttacked(board, homeRow, 3, enemigoEsBlanco) &&
+    !isSquareAttacked(board, homeRow, 2, enemigoEsBlanco)
+  ) {
+    moves.push({ row: homeRow, col: 2, capture: false });
+  }
 }
 
 /**
  * Devuelve los destinos posibles de la pieza que está en (row, col).
  * Cada movimiento es `{ row, col, capture }`. Si la casilla está vacía, [].
+ *
+ * `context.castling` y `context.enPassant` son opcionales: sin ellos, el rey
+ * no ofrece enroque y el peón no ofrece captura al paso — es lo que quiere
+ * el nivel "Cómo se mueven", que muestra una pieza sola en un tablero vacío.
  */
-export function generateMoves(board, row, col) {
+export function generateMoves(board, row, col, context = {}) {
   const piece = board[row][col];
   if (!piece) return [];
   const white = isWhite(piece);
@@ -141,11 +264,18 @@ export function generateMoves(board, row, col) {
       if (nr < 0 || nr > 7 || nc < 0 || nc > 7) continue;
       const target = board[nr][nc];
       if (target && isWhite(target) !== white) moves.push({ row: nr, col: nc, capture: true });
+      else if (context.enPassant && context.enPassant.row === nr && context.enPassant.col === nc) {
+        moves.push({ row: nr, col: nc, capture: true });
+      }
     }
     return moves;
   }
   if (type === "N") return stepMoves(board, row, col, white, KNIGHT_OFFSETS);
-  if (type === "K") return stepMoves(board, row, col, white, KING_OFFSETS);
+  if (type === "K") {
+    const moves = stepMoves(board, row, col, white, KING_OFFSETS);
+    appendCastlingMoves(board, row, col, white, context.castling, moves);
+    return moves;
+  }
   if (type === "B") return slide(board, row, col, white, DIAG);
   if (type === "R") return slide(board, row, col, white, ORTH);
   if (type === "Q") return slide(board, row, col, white, [...DIAG, ...ORTH]);
@@ -163,7 +293,8 @@ function pawnAttackSquares(row, col, white) {
 /**
  * ¿Alguna pieza de color `byWhite` ataca la casilla (row, col)? No importa si
  * la casilla está ocupada o no. Se usa para saber si el rey está en jaque, y
- * en el futuro podría servir también para el enroque (no soportado todavía).
+ * también para el enroque: ni la casilla de salida ni las que el rey cruza
+ * pueden estar atacadas.
  */
 export function isSquareAttacked(board, row, col, byWhite) {
   for (let r = 0; r < 8; r++) {
@@ -204,11 +335,11 @@ export function isInCheck(board, white) {
  * agujero de "comerse el rey": una jugada nunca deja al rey capturable,
  * porque quien estaba en jaque tiene que resolverlo antes de mover otra cosa.
  */
-export function generateLegalMoves(board, row, col) {
+export function generateLegalMoves(board, row, col, context = {}) {
   const piece = board[row][col];
   if (!piece) return [];
   const white = isWhite(piece);
-  return generateMoves(board, row, col).filter((m) => {
+  return generateMoves(board, row, col, context).filter((m) => {
     const { board: after } = applyMove(board, row, col, m.row, m.col);
     return !isInCheck(after, white);
   });

@@ -7,6 +7,7 @@ import {
   generateLegalMoves,
   generateMoves,
   hasAnyLegalMoves,
+  initialCastlingRights,
   isInCheck,
   isSquareAttacked,
   FILES,
@@ -26,13 +27,13 @@ export function at(casilla) {
   return { row: 8 - Number(casilla[1]), col: FILES.indexOf(casilla[0]) };
 }
 
-const movesFrom = (board, casilla) => {
+const movesFrom = (board, casilla, context) => {
   const { row, col } = at(casilla);
-  return generateMoves(board, row, col);
+  return generateMoves(board, row, col, context);
 };
 
-const destinos = (board, casilla) =>
-  movesFrom(board, casilla)
+const destinos = (board, casilla, context) =>
+  movesFrom(board, casilla, context)
     .map((m) => `${FILES[m.col]}${8 - m.row}`)
     .sort();
 
@@ -245,5 +246,164 @@ describe("hasAnyLegalMoves", () => {
     const board = boardFrom({ g1: "K", f2: "P", g2: "P", h2: "P", a1: "r" });
     expect(isInCheck(board, true)).toBe(true);
     expect(hasAnyLegalMoves(board, true)).toBe(false);
+  });
+});
+
+describe("enroque — generateMoves", () => {
+  it("ofrece los dos lados si nada se lo impide", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R" });
+    expect(destinos(board, "e1", { castling: initialCastlingRights() })).toEqual([
+      "c1",
+      "d1",
+      "d2",
+      "e2",
+      "f1",
+      "f2",
+      "g1",
+    ]);
+  });
+
+  it("sin el contexto de enroque, no lo ofrece (nivel 'Cómo se mueven')", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R" });
+    expect(destinos(board, "e1")).toEqual(["d1", "d2", "e2", "f1", "f2"]);
+  });
+
+  it("no lo ofrece si ya perdió el derecho de ese lado", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R" });
+    const rights = { wK: false, wQ: false, bK: true, bQ: true };
+    expect(destinos(board, "e1", { castling: rights })).toEqual(["d1", "d2", "e2", "f1", "f2"]);
+  });
+
+  it("no lo ofrece de un lado si hay una pieza en el medio", () => {
+    // f1 ocupado por un alfil propio: tapa el corto, el largo sigue libre.
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R", f1: "B" });
+    expect(destinos(board, "e1", { castling: initialCastlingRights() })).toEqual(["c1", "d1", "d2", "e2", "f2"]);
+  });
+
+  it("no lo ofrece si el rey está en jaque", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R", e8: "r" });
+    const d = destinos(board, "e1", { castling: initialCastlingRights() });
+    expect(d).not.toContain("c1");
+    expect(d).not.toContain("g1");
+  });
+
+  it("no lo ofrece de un lado si el rey pasa por una casilla atacada", () => {
+    // La torre negra en f8 ataca f1, la casilla que el rey cruza para el corto.
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R", f8: "r" });
+    const d = destinos(board, "e1", { castling: initialCastlingRights() });
+    expect(d).not.toContain("g1");
+    expect(d).toContain("c1"); // el largo no se ve afectado
+  });
+
+  it("no lo ofrece si no hay una torre propia en la esquina", () => {
+    const board = boardFrom({ e1: "K" });
+    expect(destinos(board, "e1", { castling: initialCastlingRights() })).toEqual(["d1", "d2", "e2", "f1", "f2"]);
+  });
+});
+
+describe("enroque — applyMove", () => {
+  it("enroque corto: la torre salta al otro lado del rey, en la misma jugada", () => {
+    const board = boardFrom({ e1: "K", h1: "R" });
+    const { board: after } = applyMove(board, at("e1").row, at("e1").col, at("g1").row, at("g1").col);
+    expect(after[at("g1").row][at("g1").col]).toBe("K");
+    expect(after[at("f1").row][at("f1").col]).toBe("R");
+    expect(after[at("h1").row][at("h1").col]).toBeNull();
+  });
+
+  it("enroque largo: la torre salta al otro lado del rey, en la misma jugada", () => {
+    const board = boardFrom({ e1: "K", a1: "R" });
+    const { board: after } = applyMove(board, at("e1").row, at("e1").col, at("c1").row, at("c1").col);
+    expect(after[at("c1").row][at("c1").col]).toBe("K");
+    expect(after[at("d1").row][at("d1").col]).toBe("R");
+    expect(after[at("a1").row][at("a1").col]).toBeNull();
+  });
+
+  it("también funciona para las negras, con su propia torre", () => {
+    const board = boardFrom({ e8: "k", h8: "r" });
+    const { board: after } = applyMove(board, at("e8").row, at("e8").col, at("g8").row, at("g8").col);
+    expect(after[at("g8").row][at("g8").col]).toBe("k");
+    expect(after[at("f8").row][at("f8").col]).toBe("r");
+  });
+
+  it("enrocar pierde los dos derechos de ese color", () => {
+    const board = boardFrom({ e1: "K", h1: "R" });
+    const { castling } = applyMove(
+      board,
+      at("e1").row,
+      at("e1").col,
+      at("g1").row,
+      at("g1").col,
+      initialCastlingRights(),
+    );
+    expect(castling).toEqual({ wK: false, wQ: false, bK: true, bQ: true });
+  });
+
+  it("mover la torre (sin enrocar) pierde sólo el derecho de ese lado", () => {
+    const board = boardFrom({ h1: "R" });
+    const { castling } = applyMove(
+      board,
+      at("h1").row,
+      at("h1").col,
+      at("h4").row,
+      at("h4").col,
+      initialCastlingRights(),
+    );
+    expect(castling).toEqual({ wK: false, wQ: true, bK: true, bQ: true });
+  });
+
+  it("comer una torre en su casilla de origen quita el derecho, aunque ella nunca se haya movido", () => {
+    // Caballo negro en g3 (no una torre: así no se pisa con la regla de "la
+    // pieza que se mueve sale de su propia esquina") saltando a comer la
+    // torre blanca en h1.
+    const board = boardFrom({ h1: "R", g3: "n" });
+    const { castling } = applyMove(
+      board,
+      at("g3").row,
+      at("g3").col,
+      at("h1").row,
+      at("h1").col,
+      initialCastlingRights(),
+    );
+    expect(castling).toEqual({ wK: false, wQ: true, bK: true, bQ: true });
+  });
+});
+
+describe("captura al paso", () => {
+  it("el peón ofrece la captura si hay un objetivo adyacente en el contexto", () => {
+    const board = boardFrom({ e5: "P", d5: "p" });
+    const context = { enPassant: at("d6") };
+    expect(destinos(board, "e5", context)).toContain("d6");
+    const move = movesFrom(board, "e5", context).find((m) => m.row === at("d6").row && m.col === at("d6").col);
+    expect(move.capture).toBe(true);
+  });
+
+  it("sin el objetivo en el contexto, no la ofrece (no inventa capturas fantasma)", () => {
+    const board = boardFrom({ e5: "P", d5: "p" });
+    expect(destinos(board, "e5")).not.toContain("d6");
+  });
+
+  it("un peón que no está al lado del objetivo no puede capturar al paso", () => {
+    const board = boardFrom({ b5: "P" });
+    expect(destinos(board, "b5", { enPassant: at("d6") })).not.toContain("d6");
+  });
+
+  it("al aplicarla, saca el peón comido — que no está en la casilla destino", () => {
+    const board = boardFrom({ e5: "P", d5: "p" });
+    const { board: after } = applyMove(board, at("e5").row, at("e5").col, at("d6").row, at("d6").col);
+    expect(after[at("d6").row][at("d6").col]).toBe("P");
+    expect(after[at("d5").row][at("d5").col]).toBeNull();
+    expect(after[at("e5").row][at("e5").col]).toBeNull();
+  });
+
+  it("un peón que avanza dos casillas deja listo el objetivo para la próxima jugada", () => {
+    const board = boardFrom({ e2: "P" });
+    const { enPassant } = applyMove(board, at("e2").row, at("e2").col, at("e4").row, at("e4").col);
+    expect(enPassant).toEqual(at("e3"));
+  });
+
+  it("cualquier otra jugada borra el objetivo (dura una sola jugada)", () => {
+    const board = boardFrom({ a2: "P" });
+    const { enPassant } = applyMove(board, at("a2").row, at("a2").col, at("a3").row, at("a3").col);
+    expect(enPassant).toBeNull();
   });
 });
