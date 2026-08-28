@@ -120,6 +120,35 @@ lugar, no se renumera el resto.
   ✓ o una ✗ (blancos, con sombra para leerse sobre cualquiera de los dos colores) encima
   de la casilla, en `components/Board.jsx`. Mismo criterio en éxito y en error, sin tocar
   la lógica del nivel 1.
+- **~~15. Tablero navegable con teclado~~** — las casillas del tablero (niveles 1, 3 y 4)
+  y los puntitos del carrusel de Consejos eran `<div onClick>` / `<span onClick>`: no se
+  llegaba con Tab, no respondían a Enter ni Espacio, y un lector de pantalla no los
+  anunciaba. Ahora son `<button>` de verdad, lo que da teclado y foco gratis sin
+  `onKeyDown` propio. Cuatro cambios chicos y probados por separado:
+  - Cada casilla tiene un anillo de foco visible al tabular, en un color nuevo
+    (`--color-cartero-focus`, índigo): teal se perdía contra la casilla oscura del
+    tablero (mismo tono) y gold ya significa "seleccionada", así que hubo que probarlo
+    a mano contra las dos casillas antes de elegirlo. Necesitó `!important` porque el
+    outline de "seleccionada" ya iba inline con `outline: none` cuando no está
+    seleccionada, y eso apagaba el anillo nativo del navegador.
+  - Cada casilla tiene `aria-label` con su coordenada y contenido ("e4, vacía", "e2,
+    Peón blanco"), armado en `pieceAriaLabel` (`content/pieces.js`) a partir de la misma
+    `PIECE_INFO` que ya usa el nivel 2 — sumó un campo `genero` por pieza para la
+    concordancia ("Torre blanca" vs. "Peón blanco"). A propósito no anuncia todavía
+    "movimiento legal" ni "en jaque" al enfocar, para no mezclar la semántica del foco
+    con la del estado de juego.
+  - Los puntitos del carrusel de Consejos también son `<button>`, con `aria-label`
+    ("Consejo 3 de 6") y `aria-current` en el activo. A diferencia del tablero, ahí no
+    hizo falta pelear con ningún outline inline: el foco nativo ya se ve solo.
+  - El texto de turno/jaque del nivel 4 ("Juegan las Blancas", "¡Jaque!") ahora vive en
+    un contenedor `role="status" aria-live="polite"`, así se anuncia por voz sin
+    duplicar el texto en una región oculta aparte.
+
+  Se agregó `@testing-library/user-event` como dependencia de test: jsdom no simula la
+  activación nativa de un `<button>` por teclado (Enter/Espacio → clic), hace falta esa
+  librería para probarlo de verdad en vez de asumirlo. Quedó afuera a propósito: un
+  "roving tabindex" con flechas para moverse entre casillas (64 tabstops por Tab es
+  razonable para el tamaño de esta app).
 
 **Los cuatro P0 están cerrados.**
 
@@ -155,13 +184,8 @@ sección "✅ Hecho" al principio del archivo.
 
 Vale la pena aun siendo una app familiar: es lo que la hace usable para otros chicos.
 
-### 15. Tablero navegable con teclado
-
-Las casillas son `<div onClick>`: no se llega con Tab, no responden a Enter, y un lector
-de pantalla no las anuncia.
-
-- Convertirlas en `<button>` con `aria-label` (`"casilla e4, peón blanco"`).
-- Lo mismo con los puntitos del carrusel del nivel 5, que también son `<span onClick>`.
+Por ahora está vacío: lo único que había acá (#15) ya está hecho — ver la sección
+"✅ Hecho" al principio del archivo.
 
 ---
 
