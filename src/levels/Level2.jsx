@@ -29,7 +29,7 @@ export default function Level2({ piezaInicial = null, onVerComoSeMueve }) {
               <p style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="font-bold mt-1">
                 {info.name}
               </p>
-              <p style={{ fontFamily: FONTS.nunito, color: COLORS.gold }} className="text-xs font-extrabold">
+              <p style={{ fontFamily: FONTS.nunito, color: COLORS.goldDark }} className="text-xs font-extrabold">
                 Se anota: {info.letter === "" ? "(sin letra)" : info.letter}
               </p>
               <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-xs mt-1">

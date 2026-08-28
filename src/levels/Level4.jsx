@@ -302,13 +302,13 @@ export default function Level4({ nombres, onCambiarNombres }) {
               // En jaque mate no hay "próximo turno": el juego terminó. Ganó
               // quien acaba de mover, es decir el color contrario al que está
               // trabado sin jugadas (`turn`).
-              <span style={{ color: COLORS.coral }}>
+              <span style={{ color: COLORS.coralDark }}>
                 ¡Jaque mate! Ganaron las {turn === "w" ? "Negras" : "Blancas"} {turn === "w" ? "⚫" : "⚪"} 🏆
               </span>
             ) : (
               <>
                 Juegan las {turn === "w" ? "Blancas" : "Negras"} {turn === "w" ? "⚪" : "⚫"}
-                {enJaque && <span style={{ color: COLORS.coral }}> · ¡Jaque! ⚠️</span>}
+                {enJaque && <span style={{ color: COLORS.coralDark }}> · ¡Jaque! ⚠️</span>}
               </>
             )}
           </div>
@@ -376,13 +376,13 @@ export default function Level4({ nombres, onCambiarNombres }) {
             // es más ancho que los botones normales y estira el tablero con él
             // (comparten la misma columna de ancho automático).
             <div className="flex flex-col items-center gap-1.5">
-              <span style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-xs font-bold">
+              <span style={{ fontFamily: FONTS.nunito, color: COLORS.coralDark }} className="text-xs font-bold">
                 ¿Seguro? Se borra la partida
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={empezarDeNuevo}
-                  style={{ fontFamily: FONTS.baloo, background: COLORS.coral, color: "#fff" }}
+                  style={{ fontFamily: FONTS.baloo, background: COLORS.coralDark, color: "#fff" }}
                   className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
                 >
                   Sí, borrar
@@ -402,7 +402,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
               style={{
                 fontFamily: FONTS.baloo,
                 background: "transparent",
-                color: COLORS.coral,
+                color: COLORS.coralDark,
                 border: `2px solid ${COLORS.coral}`,
               }}
               className="px-4 py-1.5 rounded-full text-sm font-bold"
@@ -445,7 +445,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
             {nombres.destinataria.length >= LARGO_MAXIMO_NOMBRE - 5 && (
-              <span style={{ color: COLORS.gold, fontFamily: FONTS.nunito }} className="text-[10px] self-end">
+              <span style={{ color: COLORS.goldDark, fontFamily: FONTS.nunito }} className="text-[10px] self-end">
                 {nombres.destinataria.length}/{LARGO_MAXIMO_NOMBRE}
               </span>
             )}
@@ -464,7 +464,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
               className="rounded-lg px-2 py-1 text-xs w-full"
             />
             {nombres.remitente.length >= LARGO_MAXIMO_NOMBRE - 5 && (
-              <span style={{ color: COLORS.gold, fontFamily: FONTS.nunito }} className="text-[10px] self-end">
+              <span style={{ color: COLORS.goldDark, fontFamily: FONTS.nunito }} className="text-[10px] self-end">
                 {nombres.remitente.length}/{LARGO_MAXIMO_NOMBRE}
               </span>
             )}
@@ -487,7 +487,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
           </button>
         )}
         {errorCopiado && (
-          <p style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-[11px] font-bold mt-1">
+          <p style={{ fontFamily: FONTS.nunito, color: COLORS.coralDark }} className="text-[11px] font-bold mt-1">
             No se pudo copiar sola. Ya te dejé el texto de arriba seleccionado: copialo con Ctrl+C (o "Copiar" desde el
             celular).
           </p>
@@ -513,19 +513,19 @@ export default function Level4({ nombres, onCambiarNombres }) {
           </label>
 
           {errorSubida && (
-            <p style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-[11px] font-bold mt-1">
+            <p style={{ fontFamily: FONTS.nunito, color: COLORS.coralDark }} className="text-[11px] font-bold mt-1">
               {errorSubida}
             </p>
           )}
 
           {confirmandoSubida ? (
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span style={{ fontFamily: FONTS.nunito, color: COLORS.coral }} className="text-[11px] font-bold">
+              <span style={{ fontFamily: FONTS.nunito, color: COLORS.coralDark }} className="text-[11px] font-bold">
                 ¿Seguro? Se reemplaza la partida actual
               </span>
               <button
                 onClick={subirJugadas}
-                style={{ fontFamily: FONTS.baloo, background: COLORS.coral, color: "#fff" }}
+                style={{ fontFamily: FONTS.baloo, background: COLORS.coralDark, color: "#fff" }}
                 className="px-3 py-1 rounded-full text-xs font-bold shadow"
               >
                 Sí, reemplazar

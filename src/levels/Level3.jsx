@@ -57,7 +57,7 @@ export default function Level3({ piezaInicial = null, onVerMasSobreLaPieza }) {
       <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark, minHeight: 28 }} className="text-lg font-bold">
         {destNote ? (
           <>
-            Esa jugada se escribe: <span style={{ color: COLORS.coral }}>{destNote}</span>
+            Esa jugada se escribe: <span style={{ color: COLORS.coralDark }}>{destNote}</span>
           </>
         ) : (
           "\u00A0"

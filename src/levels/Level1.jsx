@@ -76,7 +76,7 @@ export default function Level1() {
     <div className="flex flex-col items-center gap-4">
       <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }} className="text-center">
         <p className="text-lg sm:text-xl font-bold">
-          ¿Dónde está <span style={{ color: COLORS.coral }}>{algebraic(target.row, target.col)}</span>?
+          ¿Dónde está <span style={{ color: COLORS.coralDark }}>{algebraic(target.row, target.col)}</span>?
         </p>
         <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-sm mt-1">
           Tocá esa casilla en el tablero. Las letras van de a a h, los números de 1 a 8.
@@ -105,7 +105,7 @@ export default function Level1() {
                 : "\u00A0"}
         </span>
       </div>
-      <div style={{ fontFamily: FONTS.baloo, color: COLORS.gold }} className="text-base font-extrabold">
+      <div style={{ fontFamily: FONTS.baloo, color: COLORS.goldDark }} className="text-base font-extrabold">
         Puntos: {score}
       </div>
     </div>

@@ -68,9 +68,14 @@ function Square({
         </span>
       )}
       {coordLabel && (
+        // Sin opacity: mezclado con el color de fondo real, bajaba el contraste
+        // por debajo de lo legible (goldSoft quedaba en 3.26:1 sobre la casilla
+        // oscura). lightSquare como texto en la oscura, en vez de goldSoft: a
+        // pleno contraste goldSoft todavía no llegaba a 4.5:1 (quedaba en
+        // 4.19); lightSquare sí (4.91), reutilizando el mismo cream del tablero.
         <span
-          style={{ color: dark ? COLORS.goldSoft : COLORS.teal, fontFamily: FONTS.nunito }}
-          className="absolute bottom-0.5 right-1 text-[9px] sm:text-xs font-bold opacity-80"
+          style={{ color: dark ? COLORS.lightSquare : COLORS.teal, fontFamily: FONTS.nunito }}
+          className="absolute bottom-0.5 right-1 text-[9px] sm:text-xs font-bold"
         >
           {coordLabel}
         </span>
