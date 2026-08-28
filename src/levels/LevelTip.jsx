@@ -38,9 +38,12 @@ export default function LevelTip() {
         </button>
         <div className="flex gap-1.5">
           {TIPS.map((_, i) => (
-            <span
+            <button
               key={i}
+              type="button"
               onClick={() => setIndex(i)}
+              aria-label={`Consejo ${i + 1} de ${TIPS.length}`}
+              aria-current={i === index ? "true" : undefined}
               style={{
                 background: i === index ? COLORS.gold : COLORS.goldSoft,
                 cursor: "pointer",
