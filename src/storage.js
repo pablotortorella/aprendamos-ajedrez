@@ -53,6 +53,33 @@ function esJugadaDelLogValida(entrada) {
   );
 }
 
+const CLAVES_ENROQUE = ["wK", "wQ", "bK", "bQ"];
+
+/** `castling` es opcional: una partida guardada antes de sumar el enroque no lo tiene. */
+function esCastlingValido(castling) {
+  if (castling === null || castling === undefined) return true;
+  if (typeof castling !== "object") return false;
+  return CLAVES_ENROQUE.every((clave) => typeof castling[clave] === "boolean");
+}
+
+function esCasillaValida(casilla) {
+  return (
+    casilla !== null &&
+    typeof casilla === "object" &&
+    Number.isInteger(casilla.row) &&
+    casilla.row >= 0 &&
+    casilla.row <= 7 &&
+    Number.isInteger(casilla.col) &&
+    casilla.col >= 0 &&
+    casilla.col <= 7
+  );
+}
+
+/** `enPassant` también es opcional, por la misma razón que `castling`. */
+function esEnPassantValido(enPassant) {
+  return enPassant === null || enPassant === undefined || esCasillaValida(enPassant);
+}
+
 /** Valida una partida completa, incluida la posición anterior para deshacer. */
 export function esPartidaValida(datos, esRaiz = true) {
   if (datos === null || typeof datos !== "object") return false;
@@ -60,6 +87,8 @@ export function esPartidaValida(datos, esRaiz = true) {
   if (!esTableroValido(datos.board)) return false;
   if (datos.turn !== "w" && datos.turn !== "b") return false;
   if (!Array.isArray(datos.log) || !datos.log.every(esJugadaDelLogValida)) return false;
+  if (!esCastlingValido(datos.castling)) return false;
+  if (!esEnPassantValido(datos.enPassant)) return false;
   // `previous` es la posición anterior, para deshacer una jugada. Puede no haber.
   if (datos.previous !== null && datos.previous !== undefined) {
     if (!esPartidaValida(datos.previous, false)) return false;
@@ -94,11 +123,27 @@ export function leerPartida() {
     borrarPartida();
     return null;
   }
+  return conDefaults(datos);
+}
+
+/** Ningún derecho de enroque: el default seguro para una partida guardada antes de sumarlo. */
+const SIN_DERECHOS_DE_ENROQUE = { wK: false, wQ: false, bK: false, bQ: false };
+
+/**
+ * Completa `castling`/`enPassant` si faltan (partida guardada con una versión
+ * vieja de la app), recursivamente en `previous` también. El default es el
+ * conservador: sin derechos de enroque, no "todavía los tiene todos" — de una
+ * partida vieja no se sabe si el rey o la torre ya se movieron, así que
+ * asumir que sí se puede enrocar podría ofrecer una jugada ilegal.
+ */
+function conDefaults(datos) {
   return {
     board: datos.board,
     turn: datos.turn,
     log: datos.log,
-    previous: datos.previous ?? null,
+    previous: datos.previous ? conDefaults(datos.previous) : null,
+    castling: datos.castling ?? SIN_DERECHOS_DE_ENROQUE,
+    enPassant: datos.enPassant ?? null,
   };
 }
 

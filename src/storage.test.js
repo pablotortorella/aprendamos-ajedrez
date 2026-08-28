@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { createInitialBoard } from "./chess/engine.js";
+import { createInitialBoard, initialCastlingRights } from "./chess/engine.js";
 import {
   borrarPartida,
   esPartidaValida,
@@ -29,7 +29,14 @@ function fakeStorage({ romperAlEscribir = false, romperAlLeer = false } = {}) {
   };
 }
 
-const partida = () => ({ board: createInitialBoard(), turn: "w", log: [], previous: null });
+const partida = () => ({
+  board: createInitialBoard(),
+  turn: "w",
+  log: [],
+  previous: null,
+  castling: initialCastlingRights(),
+  enPassant: null,
+});
 
 beforeEach(() => {
   globalThis.localStorage = fakeStorage();
@@ -92,6 +99,21 @@ describe("validación de la partida", () => {
     const conBasura = { version: 1, ...partida(), previous: { board: "cualquier cosa" } };
     expect(esPartidaValida(conBasura)).toBe(false);
   });
+
+  it("acepta una partida sin castling/enPassant (guardada antes de sumar el enroque)", () => {
+    const { board, turn, log, previous } = partida();
+    expect(esPartidaValida({ version: 1, board, turn, log, previous })).toBe(true);
+  });
+
+  it("rechaza un castling con forma inválida", () => {
+    expect(esPartidaValida({ version: 1, ...partida(), castling: { wK: "sí" } })).toBe(false);
+    expect(esPartidaValida({ version: 1, ...partida(), castling: "todos" })).toBe(false);
+  });
+
+  it("rechaza un enPassant con forma inválida", () => {
+    expect(esPartidaValida({ version: 1, ...partida(), enPassant: { row: 9, col: 0 } })).toBe(false);
+    expect(esPartidaValida({ version: 1, ...partida(), enPassant: "e3" })).toBe(false);
+  });
 });
 
 describe("guardar y leer la partida", () => {
@@ -124,6 +146,20 @@ describe("guardar y leer la partida", () => {
     guardarPartida(partida());
     borrarPartida();
     expect(leerPartida()).toBe(null);
+  });
+
+  it("una partida guardada antes de sumar el enroque se lee sin derechos, no se descarta", () => {
+    // Simula lo que había en localStorage antes de este cambio: sin castling
+    // ni enPassant. El default es conservador (sin derechos), no "los tiene
+    // todos": de una partida vieja no se sabe si el rey ya se movió.
+    globalThis.localStorage.setItem(
+      "cartero-ajedrez:partida",
+      JSON.stringify({ version: 1, board: createInitialBoard(), turn: "w", log: [], previous: null }),
+    );
+    const leida = leerPartida();
+    expect(leida).not.toBeNull();
+    expect(leida.castling).toEqual({ wK: false, wQ: false, bK: false, bQ: false });
+    expect(leida.enPassant).toBeNull();
   });
 });
 
