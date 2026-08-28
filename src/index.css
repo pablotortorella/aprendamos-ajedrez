@@ -28,6 +28,11 @@
   --color-cartero-gold-soft: #f6d8a0;
   --color-cartero-coral: #e0574c;
   --color-cartero-move-hint: #7fbf8f;
+  /* Sólo para el anillo de foco de teclado: probado a mano contra las dos
+     casillas del tablero (clara y oscura) porque teal y gold, que ya usa la
+     paleta, se pierden contra la casilla oscura o quedan pisando otro
+     significado (seleccionada, jaque/captura). */
+  --color-cartero-focus: #1a2a6c;
 }
 
 html,

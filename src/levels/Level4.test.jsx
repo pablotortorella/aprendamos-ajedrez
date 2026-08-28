@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { applyMove, createInitialBoard } from "../chess/engine.js";
 import { guardarPartida } from "../storage.js";
 import Level4 from "./Level4.jsx";
@@ -10,6 +11,9 @@ const sinCambiarNombres = () => {};
 
 /** Clickea una casilla por su coordenada (el label que ya se ve en el tablero). */
 const clickCasilla = (casilla) => fireEvent.click(screen.getByText(casilla));
+
+/** Enfoca una casilla por su coordenada, como haría Tab, sin clickearla. */
+const enfocarCasilla = (casilla) => screen.getByText(casilla).closest("button").focus();
 
 beforeEach(() => {
   localStorage.clear();
@@ -30,6 +34,34 @@ describe("Level4 — jugar, deshacer, empezar de nuevo", () => {
     render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
     clickCasilla("e2");
     clickCasilla("e4");
+
+    expect(screen.getByText(/Juegan las Negras/)).toBeInTheDocument();
+    expect(screen.getByText(/1\. e4/)).toBeInTheDocument();
+  });
+
+  it("las casillas son <button>: se pueden tabular y jugar con Enter, igual que con clic", async () => {
+    const user = userEvent.setup();
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+
+    expect(screen.getByText("e2").closest("button").tagName).toBe("BUTTON");
+
+    enfocarCasilla("e2");
+    await user.keyboard("{Enter}");
+    enfocarCasilla("e4");
+    await user.keyboard("{Enter}");
+
+    expect(screen.getByText(/Juegan las Negras/)).toBeInTheDocument();
+    expect(screen.getByText(/1\. e4/)).toBeInTheDocument();
+  });
+
+  it("Espacio activa una casilla enfocada igual que Enter", async () => {
+    const user = userEvent.setup();
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+
+    enfocarCasilla("e2");
+    await user.keyboard(" ");
+    enfocarCasilla("e4");
+    await user.keyboard(" ");
 
     expect(screen.getByText(/Juegan las Negras/)).toBeInTheDocument();
     expect(screen.getByText(/1\. e4/)).toBeInTheDocument();

@@ -4,8 +4,10 @@ import { COLORS, FONTS } from "../theme.js";
 
 function Square({ dark, children, onClick, highlight, capture, selected, coordLabel, flash, correctReveal, inCheck }) {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
+      disabled={!onClick}
       style={{
         background: dark ? COLORS.darkSquare : COLORS.lightSquare,
         position: "relative",
@@ -22,7 +24,11 @@ function Square({ dark, children, onClick, highlight, capture, selected, coordLa
                 ? `inset 0 0 0 999px rgba(232,163,61,0.55)`
                 : "none",
       }}
-      className="aspect-square flex items-center justify-center select-none"
+      // El outline de "seleccionada" (arriba) va inline y gana por especificidad,
+      // así que el foco de teclado necesita !important para no quedar tapado.
+      // Distinto color que "seleccionada" (gold) y que jaque/captura (coral),
+      // para no confundir "estoy parado acá" con esos otros estados.
+      className="aspect-square flex items-center justify-center select-none focus-visible:outline-4! focus-visible:outline-cartero-focus!"
     >
       {children}
       {highlight && !capture && (
@@ -56,7 +62,7 @@ function Square({ dark, children, onClick, highlight, capture, selected, coordLa
           {coordLabel}
         </span>
       )}
-    </div>
+    </button>
   );
 }
 
