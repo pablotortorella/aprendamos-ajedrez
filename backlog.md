@@ -149,6 +149,19 @@ lugar, no se renumera el resto.
   librería para probarlo de verdad en vez de asumirlo. Quedó afuera a propósito: un
   "roving tabindex" con flechas para moverse entre casillas (64 tabstops por Tab es
   razonable para el tamaño de esta app).
+- **Reordenar "Cómo se mueven" y "Ubicá casillas" en el menú** — quedó 1. Conocé piezas,
+  2. Cómo se mueven, 3. Ubicá casillas, 4. Escribí tu carta. Mismo criterio que el reorden
+  anterior de los niveles 1 y 2: sólo cambia el orden del menú, no el contenido.
+- **Links cruzados entre "Conocé piezas" y "Cómo se mueven"** — desde una pieza abierta en
+  "Conocé piezas" hay un link "Ver cómo se mueve la torre →" que lleva a "Cómo se mueven"
+  con esa pieza ya seleccionada, y viceversa ("Conocé más sobre la torre →"). La navegación
+  entre niveles la controla ahora `App.jsx` (antes sólo tenía `level`; se agregó
+  `piezaObjetivo`, que viaja junto con el cambio de nivel y se limpia en cualquier
+  navegación normal del menú, para que no quede "pegada" una pieza de un cruce anterior).
+  De paso salió un bug real, anterior a este cambio: el texto de "Cómo se mueven" decía
+  "el torre" / "el dama" (mal concordado) porque estaba hardcodeado con "el" para las seis
+  piezas. Se agregó `pieceArticleName` (`content/pieces.js`, usa el mismo campo `genero`
+  que ya sumó #15) para decir "la torre" / "la dama" correctamente en los dos niveles.
 
 **Los cuatro P0 están cerrados.**
 

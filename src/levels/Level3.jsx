@@ -2,14 +2,14 @@ import { useMemo, useState } from "react";
 import { createEmptyBoard, generateMoves } from "../chess/engine.js";
 import { moveNotation } from "../chess/notation.js";
 import Board from "../components/Board.jsx";
-import { PIECE_INFO, UNICODE } from "../content/pieces.js";
+import { PIECE_INFO, pieceArticleName, UNICODE } from "../content/pieces.js";
 import { COLORS, FONTS } from "../theme.js";
 
 /* ============ Nivel 3: cómo se mueven ============ */
 
-export default function Level3() {
+export default function Level3({ piezaInicial = null, onVerMasSobreLaPieza }) {
   const order = ["P", "N", "B", "R", "Q", "K"];
-  const [selected, setSelected] = useState("N");
+  const [selected, setSelected] = useState(piezaInicial ?? "N");
   const origin = selected === "P" ? { row: 6, col: 3 } : { row: 3, col: 3 };
   const board = useMemo(() => {
     const b = createEmptyBoard();
@@ -50,8 +50,8 @@ export default function Level3() {
         ))}
       </div>
       <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-sm text-center max-w-sm">
-        Los círculos verdes muestran adónde puede ir el {PIECE_INFO[selected].name.toLowerCase()}. Tocá uno para ver
-        cómo se escribe esa jugada.
+        Los círculos verdes muestran adónde puede ir {pieceArticleName(selected)}. Tocá uno para ver cómo se escribe esa
+        jugada.
       </p>
       <Board board={board} legalMoves={moves} onSquareClick={handleClick} />
       <div style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark, minHeight: 28 }} className="text-lg font-bold">
@@ -63,6 +63,13 @@ export default function Level3() {
           "\u00A0"
         )}
       </div>
+      <button
+        onClick={() => onVerMasSobreLaPieza(selected)}
+        style={{ fontFamily: FONTS.baloo, color: COLORS.teal }}
+        className="text-xs font-bold underline"
+      >
+        📖 Conocé más sobre {pieceArticleName(selected)} →
+      </button>
     </div>
   );
 }

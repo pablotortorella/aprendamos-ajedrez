@@ -12,6 +12,17 @@ export default function App() {
   const [level, setLevel] = useState(1);
   // Los nombres viven acá porque los usan la carta y el encabezado.
   const [nombres, setNombres] = useState(leerNombres);
+  // Qué pieza (P/N/B/R/Q/K) mostrar al llegar a "Conocé piezas" o "Cómo se
+  // mueven" desde el link cruzado del otro nivel. Level2/Level3 se
+  // desmontan al cambiar de pestaña, así que esto sólo necesita sembrar su
+  // estado inicial al montar — por eso se limpia en cada navegación de menú
+  // normal, para no quedar "pegado" a la última pieza cruzada.
+  const [piezaObjetivo, setPiezaObjetivo] = useState(null);
+
+  const irANivel = (nuevoNivel, pieza = null) => {
+    setLevel(nuevoNivel);
+    setPiezaObjetivo(pieza);
+  };
 
   useEffect(() => {
     guardarNombres(nombres);
@@ -37,17 +48,17 @@ export default function App() {
       </header>
 
       <nav className="max-w-2xl mx-auto flex flex-wrap justify-center gap-2 mb-6">
-        <LevelTab active={level === 1} onClick={() => setLevel(1)} emoji="♟️" label="1. Conocé piezas" />
-        <LevelTab active={level === 2} onClick={() => setLevel(2)} emoji="🗺️" label="2. Ubicá casillas" />
-        <LevelTab active={level === 3} onClick={() => setLevel(3)} emoji="🧭" label="3. Cómo se mueven" />
-        <LevelTab active={level === 4} onClick={() => setLevel(4)} emoji="✉️" label="4. Escribí tu carta" />
-        <LevelTab active={level === 5} onClick={() => setLevel(5)} emoji="👑" label="Consejos" />
+        <LevelTab active={level === 1} onClick={() => irANivel(1)} emoji="♟️" label="1. Conocé piezas" />
+        <LevelTab active={level === 2} onClick={() => irANivel(2)} emoji="🧭" label="2. Cómo se mueven" />
+        <LevelTab active={level === 3} onClick={() => irANivel(3)} emoji="🗺️" label="3. Ubicá casillas" />
+        <LevelTab active={level === 4} onClick={() => irANivel(4)} emoji="✉️" label="4. Escribí tu carta" />
+        <LevelTab active={level === 5} onClick={() => irANivel(5)} emoji="👑" label="Consejos" />
       </nav>
 
       <main style={{ background: "rgba(255,255,255,0.5)", borderRadius: 24 }} className="max-w-3xl mx-auto p-4 sm:p-6">
-        {level === 1 && <Level2 />}
-        {level === 2 && <Level1 />}
-        {level === 3 && <Level3 />}
+        {level === 1 && <Level2 piezaInicial={piezaObjetivo} onVerComoSeMueve={(pieza) => irANivel(2, pieza)} />}
+        {level === 2 && <Level3 piezaInicial={piezaObjetivo} onVerMasSobreLaPieza={(pieza) => irANivel(1, pieza)} />}
+        {level === 3 && <Level1 />}
         {level === 4 && <Level4 nombres={nombres} onCambiarNombres={setNombres} />}
         {level === 5 && <LevelTip />}
       </main>

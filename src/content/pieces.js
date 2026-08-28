@@ -91,3 +91,10 @@ export const pieceAriaLabel = (piece) => {
   const color = info.genero === "f" ? (blanca ? "blanca" : "negra") : blanca ? "blanco" : "negro";
   return `${info.name} ${color}`;
 };
+
+/** "el peón" / "la torre": para armar oraciones sin acordarse el género de cada pieza. */
+export const pieceArticleName = (tipo) => {
+  const info = PIECE_INFO[tipo];
+  const articulo = info.genero === "f" ? "la" : "el";
+  return `${articulo} ${info.name.toLowerCase()}`;
+};
