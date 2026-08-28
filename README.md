@@ -81,12 +81,8 @@ botones, redondeada para lectura infantil), Nunito (cuerpo) y Caveat (solo la ca
 
 Son deliberadas para esta primera versión, no bugs:
 
-- **No hay enroque ni captura al paso.**
 - **Se deshace una sola jugada**, no la partida entera. Es deliberado (ver punto 24 del
   backlog).
-
-Está anotado también en el pie de la app, para que quede claro dentro del producto y no
-solo en el repo.
 
 El guardado usa `localStorage`, así que vive **en ese navegador y en ese dispositivo**: la
 partida no se sincroniza entre la tablet y la compu (para eso está "pegar las jugadas de

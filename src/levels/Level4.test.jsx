@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LARGO_MAXIMO_NOMBRE } from "../carta.js";
-import { applyMove, createEmptyBoard, createInitialBoard } from "../chess/engine.js";
+import { applyMove, createEmptyBoard, createInitialBoard, initialCastlingRights } from "../chess/engine.js";
 import { guardarPartida } from "../storage.js";
 import Level4 from "./Level4.jsx";
 
@@ -213,5 +213,101 @@ describe("Level4 — límite de largo del nombre", () => {
 
     await user.type(input, " Guadalupe Esperanza");
     expect(screen.getByText(`${input.value.length}/${LARGO_MAXIMO_NOMBRE}`)).toBeInTheDocument();
+  });
+});
+
+describe("Level4 — enroque", () => {
+  it("clickear el rey y la casilla del enroque corto lo juega, con la torre incluida", () => {
+    const board = createEmptyBoard();
+    board[7][4] = "K"; // e1
+    board[7][7] = "R"; // h1
+    board[0][4] = "k"; // e8, para que haya un rey rival y no rompa isInCheck
+    guardarPartida({ board, turn: "w", log: [], previous: null, castling: initialCastlingRights(), enPassant: null });
+
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+    clickCasilla("e1");
+    clickCasilla("g1");
+
+    expect(screen.getByRole("button", { name: "g1, Rey blanco" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "f1, Torre blanca" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "e1, vacía" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "h1, vacía" })).toBeInTheDocument();
+    expect(screen.getByText(/1\. O-O/)).toBeInTheDocument();
+  });
+
+  it("deshacer el enroque devuelve el derecho: se puede volver a enrocar", () => {
+    const board = createEmptyBoard();
+    board[7][4] = "K";
+    board[7][7] = "R";
+    board[0][4] = "k";
+    guardarPartida({ board, turn: "w", log: [], previous: null, castling: initialCastlingRights(), enPassant: null });
+
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+    clickCasilla("e1");
+    clickCasilla("g1");
+    fireEvent.click(screen.getByRole("button", { name: /Deshacer jugada/ }));
+
+    expect(screen.getByRole("button", { name: "e1, Rey blanco" })).toBeInTheDocument();
+    expect(screen.getByText("Todavía no jugaste ninguna jugada...")).toBeInTheDocument();
+
+    // Si el derecho no se hubiera restaurado, esta segunda vuelta no ofrecería el enroque.
+    clickCasilla("e1");
+    clickCasilla("g1");
+    expect(screen.getByRole("button", { name: "g1, Rey blanco" })).toBeInTheDocument();
+  });
+
+  it("pegar una carta que enroca la reconstruye bien", () => {
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+    const textarea = screen.getByPlaceholderText(/1\. e4/);
+    fireEvent.change(textarea, { target: { value: "1. e4 e5\n2. Cf3 Cc6\n3. Ac4 Ac5\n4. O-O" } });
+    fireEvent.click(screen.getByRole("button", { name: "Subir jugadas" }));
+
+    expect(screen.getByRole("button", { name: "g1, Rey blanco" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "f1, Torre blanca" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "c4, Alfil blanco" })).toBeInTheDocument();
+  });
+});
+
+describe("Level4 — captura al paso", () => {
+  it("un peón come al paso justo después del avance de dos casillas rival", () => {
+    const board = createEmptyBoard();
+    board[3][4] = "P"; // e5
+    board[1][3] = "p"; // d7
+    board[7][4] = "K";
+    board[0][4] = "k";
+    guardarPartida({ board, turn: "b", log: [], previous: null, castling: initialCastlingRights(), enPassant: null });
+
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+    clickCasilla("d7");
+    clickCasilla("d5"); // avance de dos casillas: deja el objetivo de captura al paso
+    clickCasilla("e5"); // selecciona el peón blanco
+    clickCasilla("d6"); // captura al paso
+
+    expect(screen.getByRole("button", { name: "d6, Peón blanco" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "d5, vacía" })).toBeInTheDocument(); // el peón comido, sacado
+    expect(screen.getByText(/exd6/)).toBeInTheDocument();
+  });
+
+  it("sin capturar de inmediato, la oportunidad se pierde (dura una sola jugada)", () => {
+    const board = createEmptyBoard();
+    board[3][4] = "P"; // e5
+    board[1][3] = "p"; // d7
+    board[7][4] = "K";
+    board[7][0] = "R"; // torre para tener una jugada neutral que hacer
+    board[0][4] = "k";
+    guardarPartida({ board, turn: "b", log: [], previous: null, castling: initialCastlingRights(), enPassant: null });
+
+    render(<Level4 nombres={nombres} onCambiarNombres={sinCambiarNombres} />);
+    clickCasilla("d7");
+    clickCasilla("d5"); // avance de dos casillas
+    clickCasilla("a1");
+    clickCasilla("a2"); // una jugada cualquiera, en vez de capturar al paso
+
+    // Un turno después, d6 ya no es una jugada legal para el peón de e5:
+    // clickearlo no debería mover nada.
+    clickCasilla("e5");
+    clickCasilla("d6");
+    expect(screen.getByRole("button", { name: "e5, Peón blanco" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "d6, vacía" })).toBeInTheDocument();
   });
 });

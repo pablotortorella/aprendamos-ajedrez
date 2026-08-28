@@ -5,6 +5,7 @@ import {
   findKing,
   generateLegalMoves,
   hasAnyLegalMoves,
+  initialCastlingRights,
   isInCheck,
   isWhite,
 } from "../chess/engine.js";
@@ -19,7 +20,14 @@ import { COLORS, FONTS } from "../theme.js";
 
 /** Una partida recién empezada, sin nada para deshacer. */
 function partidaNueva() {
-  return { board: createInitialBoard(), turn: "w", log: [], previous: null };
+  return {
+    board: createInitialBoard(),
+    turn: "w",
+    log: [],
+    previous: null,
+    castling: initialCastlingRights(),
+    enPassant: null,
+  };
 }
 
 /**
@@ -76,22 +84,23 @@ function reconstruirPartida(texto) {
   let turn = "w";
   let log = [];
   let previous = null;
+  let castling = initialCastlingRights();
+  let enPassant = null;
 
   for (const jugada of jugadas) {
     for (const texto of [jugada.white, jugada.black]) {
       if (!texto) continue;
       const parsed = parseMove(texto);
-      const resolved = parsed && resolveMove(board, turn, parsed);
+      const resolved = parsed && resolveMove(board, turn, parsed, { castling, enPassant });
       if (!resolved) {
         return { error: `No pude entender la jugada "${texto}" (número ${jugada.number}).` };
       }
-      const { board: newBoard, promoted } = applyMove(
-        board,
-        resolved.fromRow,
-        resolved.fromCol,
-        resolved.toRow,
-        resolved.toCol,
-      );
+      const {
+        board: newBoard,
+        promoted,
+        castling: nuevoCastling,
+        enPassant: nuevoEnPassant,
+      } = applyMove(board, resolved.fromRow, resolved.fromCol, resolved.toRow, resolved.toCol, castling);
       const notation = notarJugada(
         board,
         resolved.fromRow,
@@ -105,14 +114,16 @@ function reconstruirPartida(texto) {
           promoted,
         },
       );
-      previous = { board, turn, log };
+      previous = { board, turn, log, castling, enPassant };
       log = agregarJugada(log, turn, notation);
       board = newBoard;
       turn = turn === "w" ? "b" : "w";
+      castling = nuevoCastling;
+      enPassant = nuevoEnPassant;
     }
   }
 
-  return { partida: { board, turn, log, previous } };
+  return { partida: { board, turn, log, previous, castling, enPassant } };
 }
 
 export default function Level4({ nombres, onCambiarNombres }) {
@@ -131,7 +142,8 @@ export default function Level4({ nombres, onCambiarNombres }) {
   const [errorSubida, setErrorSubida] = useState("");
   const [confirmandoSubida, setConfirmandoSubida] = useState(false);
 
-  const { board, turn, log } = partida;
+  const { board, turn, log, castling, enPassant } = partida;
+  const contextoJugadas = { castling, enPassant };
 
   const descargarImagen = () => {
     const jugadasJugadas = log.reduce((total, j) => total + (j.white ? 1 : 0) + (j.black ? 1 : 0), 0);
@@ -205,7 +217,12 @@ export default function Level4({ nombres, onCambiarNombres }) {
     if (selected) {
       const m = moves.find((mv) => mv.row === row && mv.col === col);
       if (m) {
-        const { board: newBoard, promoted } = applyMove(board, selected.row, selected.col, row, col);
+        const {
+          board: newBoard,
+          promoted,
+          castling: nuevoCastling,
+          enPassant: nuevoEnPassant,
+        } = applyMove(board, selected.row, selected.col, row, col, castling);
         // Se escribe con el tablero PREVIO: la desambiguación necesita ver
         // dónde estaban las otras piezas antes de mover.
         const notation = notarJugada(board, selected.row, selected.col, row, col, newBoard, turn, {
@@ -218,7 +235,9 @@ export default function Level4({ nombres, onCambiarNombres }) {
           turn: turn === "w" ? "b" : "w",
           log: agregarJugada(log, turn, notation),
           // Se guarda la posición de antes para poder volver un paso atrás.
-          previous: { board, turn, log },
+          previous: { board, turn, log, castling, enPassant },
+          castling: nuevoCastling,
+          enPassant: nuevoEnPassant,
         });
         limpiarSeleccion();
         setCopied(false);
@@ -229,7 +248,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
       // clicking another own piece re-selects
       if (piece && isWhite(piece) === (turn === "w")) {
         setSelected({ row, col });
-        setMoves(generateLegalMoves(board, row, col));
+        setMoves(generateLegalMoves(board, row, col, contextoJugadas));
         return;
       }
       limpiarSeleccion();
@@ -237,7 +256,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
     }
     if (piece && isWhite(piece) === (turn === "w")) {
       setSelected({ row, col });
-      setMoves(generateLegalMoves(board, row, col));
+      setMoves(generateLegalMoves(board, row, col, contextoJugadas));
     }
   };
 

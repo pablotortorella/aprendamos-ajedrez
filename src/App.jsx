@@ -64,7 +64,7 @@ export default function App() {
       </main>
 
       <footer className="text-center text-xs mt-6 pb-4 text-cartero-ink-soft">
-        <p>Notación en español · sin enroque ni captura al paso, para no complicar todavía 🙂</p>
+        <p>Notación en español 🙂</p>
         <p className="mt-1">
           Hecho por Pablo Tortorella, en colaboración con Claude Code · Software libre (GPL-3.0) ·{" "}
           <a
