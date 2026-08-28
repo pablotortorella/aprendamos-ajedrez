@@ -3,6 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Defensa en profundidad, no una vulnerabilidad puntual: esta app no
+         carga nada de terceros (fuentes autohospedadas, sin backend, sin
+         CDN), así que un CSP estricto no le saca funcionalidad a cambio de
+         cerrar la puerta a scripts/estilos/imágenes inyectados desde afuera.
+         style-src necesita 'unsafe-inline' porque la app usa style={{}} de
+         React en vez de sólo clases (son atributos style="" reales en el
+         HTML final, y CSP los trata distinto de un <script> inline).
+         frame-ancestors no va: por spec, un <meta> lo ignora en silencio (sólo
+         funciona como header HTTP, que GitHub Pages no deja mandar); ponerlo
+         acá daría una falsa sensación de protección contra clickjacking. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <meta name="theme-color" content="#164E53" />
