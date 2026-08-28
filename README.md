@@ -60,6 +60,8 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
      borrar algo). La partida se guarda sola, y los nombres de quien escribe y quien
      recibe quedan guardados también.
 5. **Consejos** — carrusel de seis tips estratégicos básicos.
+6. **Ayuda** — una tarjeta por sección con una explicación breve de qué hace cada una, para
+   quien llega por primera vez o se perdió en el menú.
 
 ## Decisiones de diseño (y por qué)
 
@@ -132,11 +134,13 @@ src/
   chess/notation.js         Notación algebraica española, escribir y leer (sin React)
   content/pieces.js         Info de cada pieza (PIECE_INFO) y sus glyphs Unicode
   content/tips.js           Los seis consejos del nivel 5
+  content/ayuda.js          Los textos de la sección Ayuda (nivel 6)
   components/Board.jsx      El tablero: Board y Square
   components/LevelTab.jsx   Botón de navegación entre niveles
   components/ThemePicker.jsx Selector de tema (ver "Temas de color" arriba)
   levels/Level1.jsx ... 4   Un archivo por nivel jugable
   levels/LevelTip.jsx       Nivel 5 (consejos)
+  levels/LevelHelp.jsx      Nivel 6 (ayuda)
   *.test.js                 Tests — se corren con `npm test`
 ```
 

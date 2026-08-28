@@ -381,6 +381,14 @@ Con este quedan 5 temas completos: Estándar ♟️, Oscuro 🌙, Verde 🌳, Un
 — los 5 que Pablo pidió originalmente al proponer la idea. Verificado en los 5 niveles, el
 punto de movimiento legal y el halo de foco de teclado.
 
+### ~~37. Sección Ayuda ❓~~
+
+Sexto botón del menú, después de Consejos: una tarjeta por sección (`content/ayuda.js`,
+`levels/LevelHelp.jsx`) con una explicación breve de qué hace cada una — para quien llega
+por primera vez a la app o se pierde entre los botones. No es un carrusel como Consejos
+(no hay "actual" que tenga sentido acá): las 5 tarjetas se muestran todas juntas, en el
+orden del menú, para poder recorrerlas de un vistazo.
+
 ---
 
 ## P1 — Cierra el círculo de la correspondencia

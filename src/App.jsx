@@ -5,6 +5,7 @@ import Level1 from "./levels/Level1.jsx";
 import Level2 from "./levels/Level2.jsx";
 import Level3 from "./levels/Level3.jsx";
 import Level4 from "./levels/Level4.jsx";
+import LevelHelp from "./levels/LevelHelp.jsx";
 import LevelTip from "./levels/LevelTip.jsx";
 import { guardarNombres, guardarTema, leerNombres, leerTema } from "./storage.js";
 import { COLORS, FONTS } from "./theme.js";
@@ -71,6 +72,7 @@ export default function App() {
         <LevelTab active={level === 3} onClick={() => irANivel(3)} emoji="🗺️" label="3. Ubicá casillas" />
         <LevelTab active={level === 4} onClick={() => irANivel(4)} emoji="✉️" label="4. Escribí tu carta" />
         <LevelTab active={level === 5} onClick={() => irANivel(5)} emoji="👑" label="Consejos" />
+        <LevelTab active={level === 6} onClick={() => irANivel(6)} emoji="❓" label="Ayuda" />
       </nav>
 
       <main style={{ background: COLORS.contentBg, borderRadius: 24 }} className="max-w-3xl mx-auto p-4 sm:p-6">
@@ -79,6 +81,7 @@ export default function App() {
         {level === 3 && <Level1 />}
         {level === 4 && <Level4 nombres={nombres} onCambiarNombres={setNombres} />}
         {level === 5 && <LevelTip />}
+        {level === 6 && <LevelHelp />}
       </main>
 
       <footer className="text-center text-xs mt-6 pb-4 text-cartero-ink-soft">

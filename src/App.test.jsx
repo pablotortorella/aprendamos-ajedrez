@@ -16,16 +16,30 @@ afterEach(() => {
 });
 
 describe("App — menú", () => {
-  it("muestra los niveles en orden: piezas, cómo se mueven, casillas, carta, consejos", () => {
+  it("muestra los niveles en orden: piezas, cómo se mueven, casillas, carta, consejos, ayuda", () => {
     render(<App />);
-    const etiquetas = screen.getAllByRole("button", { name: /\d\.|Consejos/ }).map((b) => b.textContent);
+    const etiquetas = screen.getAllByRole("button", { name: /\d\.|Consejos|Ayuda/ }).map((b) => b.textContent);
     expect(etiquetas).toEqual([
       "♟️ 1. Conocé piezas",
       "🧭 2. Cómo se mueven",
       "🗺️ 3. Ubicá casillas",
       "✉️ 4. Escribí tu carta",
       "👑 Consejos",
+      "❓ Ayuda",
     ]);
+  });
+});
+
+describe("App — Ayuda", () => {
+  it("el botón Ayuda muestra una explicación de cada sección del menú", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /❓ Ayuda/ }));
+
+    expect(screen.getByText("1. Conocé piezas")).toBeInTheDocument();
+    expect(screen.getByText("4. Escribí tu carta")).toBeInTheDocument();
+    expect(screen.getByText("Consejos")).toBeInTheDocument();
   });
 });
 
