@@ -194,6 +194,34 @@ lugar, no se renumera el resto.
 
 **La auditoría de pulido pre-lanzamiento (2026-08-28) está cerrada.**
 
+- **~~29. Enroque y captura al paso~~** — las dos reglas que quedaban afuera desde el
+  primer commit del proyecto. Ninguna de las dos se puede derivar mirando sólo el
+  tablero: el enroque depende de si el rey o esa torre YA se movieron alguna vez (no de
+  dónde están ahora), y la captura al paso depende de cuál fue la última jugada. Por eso
+  `generateMoves`/`generateLegalMoves` (`chess/engine.js`) ahora reciben un `context`
+  opcional (`{ castling, enPassant }`) que viaja junto al tablero en el estado de la
+  partida, no adentro de él — el nivel "Cómo se mueven" (una pieza sola, sin este
+  contexto) sigue sin ofrecer ninguna de las dos, que es justo lo que quería.
+  `applyMove` no necesitó un parámetro nuevo para EJECUTAR ninguna de las dos: en una
+  jugada legal, un rey que se mueve 2 casillas sólo puede ser enroque, y un peón que va
+  en diagonal a una casilla vacía sólo puede ser captura al paso — se detectan solos
+  mirando la geometría del movimiento. El enroque chequea las cinco condiciones reales:
+  derecho vigente, casillas del medio vacías, la torre en su lugar, y ni la casilla de
+  salida ni las que el rey cruza atacadas.
+
+  El enroque se escribe "O-O" / "O-O-O" (`chess/notation.js`), detectado con la misma
+  lógica geométrica; `parseMove` tolera también "0-0" con ceros. `esPartidaValida`
+  (`storage.js`) trata `castling`/`enPassant` como opcionales — una partida guardada
+  antes de este cambio no los tiene, y si se hubieran exigido, esas partidas en curso se
+  habrían descartado por "corruptas" en la próxima recarga. El default al leerlos es
+  conservador (sin ningún derecho de enroque), no "todos vigentes": de una partida vieja
+  no se sabe si el rey ya se había movido.
+
+  Se sacó la frase "sin enroque ni captura al paso" del pie de la app y del README.
+  Probado a mano jugando la apertura italiana completa hasta el enroque, y una captura
+  al paso real — incluida la reconstrucción de esas mismas cartas pegadas en el campo
+  de "¿Te llegó una carta?".
+
 ---
 
 ## P1 — Cierra el círculo de la correspondencia
