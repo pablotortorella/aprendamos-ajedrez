@@ -222,56 +222,40 @@ lugar, no se renumera el resto.
   al paso real — incluida la reconstrucción de esas mismas cartas pegadas en el campo
   de "¿Te llegó una carta?".
 
----
-
-## Revisión de seguridad y usabilidad (2026-08-28)
-
-Pedida por Pablo, aparte de la auditoría de pulido de P0.5. Seguridad: revisado el código
-en busca de `dangerouslySetInnerHTML`/`eval`/secrets hardcodeados (nada), `npm audit` (0
+**Revisión de seguridad y usabilidad (2026-08-28).** Seguridad: revisado el código en
+busca de `dangerouslySetInnerHTML`/`eval`/secrets hardcodeados (nada), `npm audit` (0
 vulnerabilidades), el único link externo (`rel="noopener noreferrer"` puesto), los
 workflows de GitHub Actions (permisos mínimos, sin secrets) y el nombre de archivo de la
-imagen descargable (no viene de texto del usuario, no hay riesgo de inyección ahí). No
-apareció nada que corregir — es una app 100% estática sin backend, así que gran parte del
-OWASP Top 10 (inyección SQL, auth, SSRF) directamente no aplica. Única sugerencia de
-"defensa en profundidad", no una vulnerabilidad real: un meta `Content-Security-Policy` en
-`index.html`, gratis de agregar y sin bajar nada hoy.
+imagen descargable (no viene de texto del usuario). No apareció ninguna vulnerabilidad
+real — es una app 100% estática sin backend, así que gran parte del OWASP Top 10 no
+aplica. De usabilidad salieron dos candidatas, verificadas con números concretos (cálculo
+de contraste WCAG y prueba en el navegador), no a ojo. Las tres cosas que salieron de la
+revisión ya están hechas:
 
-De usabilidad salieron dos candidatas, verificadas con números concretos (cálculo de
-contraste WCAG y prueba en el navegador), no a ojo:
-
-### 30. Contraste de color por debajo de WCAG AA en tres lugares
-
-Medido con la fórmula de contraste de WCAG sobre los colores reales de `theme.js`:
-
-- **Coordenadas del tablero** (`Board.jsx`, `text-[9px] sm:text-xs opacity-80`): el
-  `opacity-80` importa más de lo que parece — mezclado con el color de fondo real, el
-  contraste efectivo es **3.26:1** en casilla oscura (goldSoft) y **3.45:1** en casilla
-  clara (teal), contra el 4.5:1 que hace falta para texto chico. Son las coordenadas que
-  se están aprendiendo a leer en el nivel "Ubicá casillas": el contenido pedagógico
-  central de ese nivel es justo lo que menos contraste tiene.
-- **"Se anota: C" / "Se anota: T"** (nivel "Conocé piezas", `text-xs font-extrabold`,
-  color `gold` sobre blanco): **2.16:1**, bien por debajo incluso del mínimo relajado
-  (3:1) para texto grande.
-- **Mensajes de error y confirmación** (nivel "Escribí tu carta", `text-[11px]`, color
-  `coral` sobre blanco — "¿Seguro? Se borra la partida", "No se pudo copiar sola..."):
-  **3.73:1**, por debajo de 4.5:1.
-
-Una salida posible sin tocar la paleta entera: oscurecer sólo estos usos puntuales.
-`gold` al 65% de su brillo (`#976a28` en vez de `#E8A33D`) da 4.76:1; `coral` al 85%
-(`#be4a41` en vez de `#E0574C`) da 4.95:1. Para las coordenadas, sacar el `opacity-80`
-además de ajustar el color hace falta — igual que con el foco de teclado (#15), conviene
-probar el color elegido contra las dos casillas (clara y oscura) a mano, no sólo contra
-una.
-
-### 31. Sin manejo de errores general: un bug futuro deja pantalla blanca
-
-No hay ningún `ErrorBoundary` en la app (`grep` no encontró ninguno). Si algún componente
-tira una excepción — un bug futuro, un dato de `localStorage` que pasó la validación pero
-igual rompe algo río abajo — React desmonta todo el árbol y queda una pantalla en blanco,
-sin ningún mensaje. Para una nena de 6 años usando la app sola, eso es mucho más confuso
-que un cartel de "algo salió mal, recargá la página". Es una red de seguridad barata: un
-componente `ErrorBoundary` chico envolviendo `<App />` en `main.jsx`, sin necesidad de
-tocar nada del resto de la app.
+- **~~Content-Security-Policy~~** — defensa en profundidad, no corrige una vulnerabilidad
+  puntual: esta app no carga nada de terceros, así que un CSP estricto no cuesta
+  funcionalidad. `style-src` necesita `'unsafe-inline'` porque la app usa `style={{}}` de
+  React extensamente (71 usos). `frame-ancestors` no se incluye: por spec, un `<meta>` lo
+  ignora en silencio, y GitHub Pages no deja mandar headers HTTP custom — ponerlo daría
+  una falsa sensación de protección. Probado en dev (HMR de Vite) y en el build de
+  producción, incluida la descarga de imagen del tablero (usa un `blob:` URL, el caso más
+  delicado): sin violaciones.
+- **~~30. Contraste de color por debajo de WCAG AA en tres lugares~~** — las coordenadas
+  del tablero daban 3.26-3.45:1 (el `opacity-80` las castigaba más de lo que parecía)
+  contra el 4.5:1 que hace falta para texto chico — justo el contenido que se está
+  aprendiendo a leer. "Se anota: X" daba 2.16:1. Los mensajes de error y confirmación en
+  coral daban 3.27-3.73:1 según el fondo. Se agregaron `goldDark` (gold al 60% de brillo)
+  y `coralDark` (coral al 80%) a `theme.js`, usados sólo donde el color hacía de texto —
+  bordes y fondos decorativos, que sólo necesitan 3:1, quedaron con el color normal. Las
+  coordenadas cambiaron de estrategia: en vez de aclarar con opacity (que en casilla
+  oscura ni a pleno brillo llegaba a 4.5:1), la casilla oscura usa directamente el cream
+  de `lightSquare` como color de texto — reutiliza un token que ya existe.
+- **~~31. Sin manejo de errores general~~** — sin ningún `ErrorBoundary`, cualquier
+  excepción en un componente desmontaba todo el árbol de React y dejaba una pantalla en
+  blanco sin ningún mensaje. `ErrorBoundary.jsx` envuelve `<App />` en `main.jsx` con un
+  mensaje corto y un botón para recargar (la partida ya se guarda sola en cada jugada, así
+  que recargar no pierde nada). Probado forzando un error real en el navegador, no sólo
+  con el test.
 
 *(Verificado también, sin encontrar problemas: el foco de teclado se mantiene correctamente
 después de jugar una jugada — no se pierde ni salta a `<body>` — así que el trabajo de
