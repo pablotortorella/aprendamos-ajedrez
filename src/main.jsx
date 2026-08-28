@@ -1,6 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 import "./index.css";
 // Fuentes auto-hospedadas (@fontsource): la app no depende de Google Fonts
 // por internet. Sólo los pesos que se usan de verdad (ver theme.js antes,
@@ -19,6 +20,8 @@ import "@fontsource/caveat/latin-700.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>,
 );
