@@ -57,6 +57,7 @@ export const COLORS = {
 export const THEMES = [
   { id: "estandar", emoji: "♟️", label: "Estándar" },
   { id: "dark", emoji: "🌙", label: "Oscuro" },
+  { id: "arbol", emoji: "🌳", label: "Verde" },
 ];
 
 // Las fuentes (Baloo 2, Nunito, Caveat) están auto-hospedadas con @fontsource

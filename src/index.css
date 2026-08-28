@@ -110,6 +110,36 @@
   --color-cartero-content-bg: rgba(255, 255, 255, 0.06);
 }
 
+/* ============ Tema verde ("árbol") ============ */
+[data-theme="arbol"] {
+  --color-cartero-paper: #eef2e2;
+  --color-cartero-paper-card: #fbfaf1;
+  --color-cartero-ink: #24321c;
+  --color-cartero-ink-soft: #57634a;
+  --color-cartero-teal: #3f7d3f;
+  --color-cartero-teal-dark: #2b5a2b;
+  --color-cartero-square-light: #eef0d4;
+  --color-cartero-square-dark: #2f5233;
+  --color-cartero-gold: #e8a33d;
+  --color-cartero-gold-soft: #f6d8a0;
+  --color-cartero-coral: #e0574c;
+  --color-cartero-gold-dark: #8b6225;
+  --color-cartero-coral-dark: #b3463d;
+  --color-cartero-coral-strong: #b3463d;
+  --color-cartero-piece-ink: #141726;
+  /* A diferencia del tema estándar (donde el trazo de la pieza negra es
+     igual al relleno, porque el relleno solo ya pasa 3:1 contra la casilla
+     oscura), acá el relleno solo no alcanza (2.84:1) — la casilla oscura de
+     este tema es más saturada. Mismo arreglo que en el tema oscuro: el
+     trazo toma el color de la casilla CLARA, no el del relleno. */
+  --color-cartero-piece-ink-stroke: #eef0d4;
+  --color-cartero-piece-white-stroke: #164e53;
+  /* --color-cartero-content-bg no se pisa acá a propósito: es un tema
+     claro como el estándar, así que el valor base (blanco al 50%) ya
+     funciona igual de bien — pisarlo sería repetir el mismo valor sin
+     necesidad. */
+}
+
 html,
 body,
 #root {

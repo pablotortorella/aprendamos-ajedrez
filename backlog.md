@@ -330,14 +330,37 @@ accesibilidad de #15 sigue sólido bajo un flujo de juego real.)*
      de los textos de adentro contra el nuevo fondo verificado con la fórmula de WCAG
      (9.96:1, 7.69:1 y 8.65:1 según el texto — de sobra para AA).
 
-### Temas pendientes: verde, rosa/violeta, azul
+### ~~33. Tema Verde 🌳~~
 
-Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol), 🦄 rosa y
-violeta (unicornio), 🌀 o 💧 azul y celeste (espiral/agua). El mecanismo ya está armado
-(#32): sumar cada uno es diseñar una paleta nueva completa y verificarla con la misma
-rigurosidad — no hay atajo técnico que lo abarate, la mayor parte del trabajo de #32 fue
-justamente ese diseño verificado, no el mecanismo en sí. Quedan afuera del alcance actual
-a propósito, para no demorar los dos primeros — se van a sumar de a uno.
+Tercer tema de color (después de Estándar y Oscuro, ver #32): paleta boscosa completa,
+verificada con la misma fórmula de contraste de WCAG que los otros dos, no "elegir verdes
+lindos" a ojo.
+
+Un desafío nuevo, que no se había dado en los otros dos temas: el relleno solo de la
+pieza negra contra la casilla oscura de este tema (`#2f5233`, un verde pino bastante
+saturado) daba 2.84:1 — no llega a 3:1. Mismo patrón que ya existía para el tema oscuro:
+`pieceInkStroke` (el trazo, no el relleno) toma el color de la casilla CLARA del propio
+tema en vez de coincidir con el relleno, así la pieza queda "delineada" y se lee aunque el
+relleno solo no alcance. Con eso, los cuatro pares pieza↔casilla (negra/blanca ×
+clara/oscura) quedan entre 7.6:1 y 15.3:1.
+
+El resto de la paleta reutiliza gold/coral/goldDark/coralDark tal cual (ya pasaban contra
+los nuevos fondos, no hacía falta un tercer juego de esos), y el punto de "movimiento
+legal" (`move-hint-on-light/dark`, ver #32) volvió a pasar sin cambios contra las casillas
+nuevas — confirma que esos dos valores son de verdad independientes del tema, como se
+pensó al diseñarlos. `content-bg` (la tarjeta traslúcida) tampoco se pisa para este tema:
+es un tema claro como el estándar, así que el valor base ya sirve.
+
+Verificado en los 5 niveles, con el punto de movimiento legal, el halo de foco de teclado
+y el estado de "revelar casilla" (dorado) de "Ubicá casillas".
+
+### Temas pendientes: rosa/violeta, azul
+
+Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol, hecho arriba),
+🦄 rosa y violeta (unicornio), 🌀 o 💧 azul y celeste (espiral/agua). El mecanismo ya está
+armado (#32): sumar cada uno es diseñar una paleta nueva completa y verificarla con la
+misma rigurosidad — no hay atajo técnico que lo abarate, la mayor parte del trabajo de
+cada tema es justamente ese diseño verificado, no el mecanismo en sí.
 
 ---
 
