@@ -61,7 +61,8 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
      recibe quedan guardados también.
 5. **Consejos** — carrusel de seis tips estratégicos básicos.
 6. **Ayuda** — una tarjeta por sección con una explicación breve de qué hace cada una, para
-   quien llega por primera vez o se perdió en el menú.
+   quien llega por primera vez o se perdió en el menú. Cada tarjeta es también un link
+   directo a esa sección.
 
 ## Decisiones de diseño (y por qué)
 

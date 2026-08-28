@@ -81,7 +81,7 @@ export default function App() {
         {level === 3 && <Level1 />}
         {level === 4 && <Level4 nombres={nombres} onCambiarNombres={setNombres} />}
         {level === 5 && <LevelTip />}
-        {level === 6 && <LevelHelp />}
+        {level === 6 && <LevelHelp onIrANivel={irANivel} />}
       </main>
 
       <footer className="text-center text-xs mt-6 pb-4 text-cartero-ink-soft">

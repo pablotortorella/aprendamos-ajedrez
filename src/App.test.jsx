@@ -41,6 +41,17 @@ describe("App — Ayuda", () => {
     expect(screen.getByText("4. Escribí tu carta")).toBeInTheDocument();
     expect(screen.getByText("Consejos")).toBeInTheDocument();
   });
+
+  it("tocar una tarjeta de Ayuda navega directo a esa sección", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: /❓ Ayuda/ }));
+    await user.click(screen.getByRole("button", { name: /Ir a 2\. Cómo se mueven/ }));
+
+    // Nivel "Cómo se mueven" arranca con el Caballo seleccionado por defecto.
+    expect(screen.getByText(/adónde puede ir el caballo/)).toBeInTheDocument();
+  });
 });
 
 describe("App — link cruzado entre 'Conocé piezas' y 'Cómo se mueven'", () => {

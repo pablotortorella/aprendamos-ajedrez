@@ -389,6 +389,12 @@ por primera vez a la app o se pierde entre los botones. No es un carrusel como C
 (no hay "actual" que tenga sentido acá): las 5 tarjetas se muestran todas juntas, en el
 orden del menú, para poder recorrerlas de un vistazo.
 
+**Ajuste al toque (mismo día):** cada tarjeta es ahora un link directo a su sección — se
+toca la tarjeta entera (no sólo un texto chico) y navega ahí mismo, mismo mecanismo de
+`irANivel` que ya usaban los cross-links entre "Conocé piezas" y "Cómo se mueven" (ver más
+arriba). El número de nivel vive en `content/ayuda.js` (`nivel: 1..5`), no hardcodeado en
+el componente, así una sección que cambie de lugar en el menú no rompe el link.
+
 ---
 
 ## P1 — Cierra el círculo de la correspondencia
