@@ -59,6 +59,7 @@ export const THEMES = [
   { id: "dark", emoji: "🌙", label: "Oscuro" },
   { id: "arbol", emoji: "🌳", label: "Verde" },
   { id: "unicornio", emoji: "🦄", label: "Unicornio" },
+  { id: "agua", emoji: "💧", label: "Agua" },
 ];
 
 // Las fuentes (Baloo 2, Nunito, Caveat) están auto-hospedadas con @fontsource

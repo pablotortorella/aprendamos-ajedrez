@@ -166,6 +166,30 @@
   /* content-bg no se pisa: tema claro, el valor base ya sirve (ver Verde). */
 }
 
+/* ============ Tema azul y celeste ("agua") ============ */
+[data-theme="agua"] {
+  --color-cartero-paper: #e8f2f7;
+  --color-cartero-paper-card: #fafdff;
+  --color-cartero-ink: #17324a;
+  --color-cartero-ink-soft: #4d6b80;
+  --color-cartero-teal: #1f6fa8;
+  --color-cartero-teal-dark: #155579;
+  --color-cartero-square-light: #dcecf5;
+  --color-cartero-square-dark: #1f4e6e;
+  --color-cartero-gold: #e8a33d;
+  --color-cartero-gold-soft: #f6d8a0;
+  --color-cartero-coral: #e0574c;
+  --color-cartero-gold-dark: #8b6225;
+  --color-cartero-coral-dark: #b3463d;
+  --color-cartero-coral-strong: #b3463d;
+  --color-cartero-piece-ink: #141726;
+  /* Mismo motivo que Verde (#33) y Unicornio (#34): el trazo de la pieza
+     negra toma el color de la casilla clara del tema. */
+  --color-cartero-piece-ink-stroke: #dcecf5;
+  --color-cartero-piece-white-stroke: #164e53;
+  /* content-bg no se pisa: tema claro, el valor base ya sirve. */
+}
+
 html,
 body,
 #root {

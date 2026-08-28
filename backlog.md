@@ -369,13 +369,17 @@ del contexto — no es el único medio para transmitir ese estado).
 
 Verificado en los 5 niveles, el punto de movimiento legal y el halo de foco de teclado.
 
-### Temas pendientes: azul
+### ~~35. Tema Agua 💧~~
 
-Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol, #33), 🦄 rosa y
-violeta (unicornio, #34), 🌀 o 💧 azul y celeste (espiral/agua). El mecanismo ya está
-armado (#32): sumar el que queda es diseñar una paleta nueva completa y verificarla con la
-misma rigurosidad — no hay atajo técnico que lo abarate, la mayor parte del trabajo de
-cada tema es justamente ese diseño verificado, no el mecanismo en sí.
+Quinto y último tema de la tanda pedida por Pablo (azul y celeste). Mismo mecanismo,
+misma verificación de contraste WCAG, mismo patrón de trazo-toma-el-color-de-la-casilla-
+clara para la pieza negra — pasó todo a la primera, igual que Unicornio (#34). Emoji 💧
+(gota de agua) en vez de 🌀 (espiral): se ve más distinto de los otros cuatro emojis del
+selector a tamaño chico.
+
+Con este quedan 5 temas completos: Estándar ♟️, Oscuro 🌙, Verde 🌳, Unicornio 🦄, Agua 💧
+— los 5 que Pablo pidió originalmente al proponer la idea. Verificado en los 5 niveles, el
+punto de movimiento legal y el halo de foco de teclado.
 
 ---
 
