@@ -261,6 +261,50 @@ revisión ya están hechas:
 después de jugar una jugada — no se pierde ni salta a `<body>` — así que el trabajo de
 accesibilidad de #15 sigue sólido bajo un flujo de juego real.)*
 
+- **~~32. Temas de color, con Estándar y Oscuro~~** — selector de tema (un emoji por
+  tema, junto al encabezado) pedido por Pablo. Cada color de `theme.js` pasó de ser un hex
+  fijo a `var(--color-cartero-x)`, con las paletas de verdad viviendo en `index.css`
+  (`@theme` para el estándar, `[data-theme="dark"] { ... }` para el oscuro) — así
+  `style={{ color: COLORS.ink }}`, que ya se usaba en 70+ lugares, responde solo al tema
+  activo sin tocar un componente. Sumar un tema nuevo es un bloque de variables en CSS más
+  una entrada en `THEMES`, nada más.
+
+  El tablero es la excepción a "todo se oscurece": casilla clara y oscura se mantienen en
+  un rango de luminosidad parecido al del tema estándar (sólo cambia el matiz, verde
+  azulado → índigo nocturno) porque las piezas dependen de esa distancia de brillo para
+  leerse — un tablero pitch-black deja una pieza negra invisible contra la casilla oscura.
+  Se agregó relleno + trazo explícitos a las piezas NEGRAS también (antes sólo las
+  blancas lo tenían): el color de las piezas es identidad de la pieza, no un estilo de
+  interfaz, así que no cambia con el tema.
+
+  El anillo de foco de teclado (#15) tuvo que cambiar de estrategia: ningún color único
+  daba 3:1 de contraste contra las dos casillas del tablero oscuro a la vez (matemáticamente
+  imposible con casillas de luminosidad parecida entre sí — un color que contrasta bien
+  con una necesariamente se acerca a la otra). Se resolvió con un halo de dos aros (blanco
+  + oscuro, `box-shadow` con `!important`): no depende de contrastar con lo que hay
+  detrás, sólo de que los dos aros contrasten ENTRE SÍ, así que funciona en cualquier
+  tema, incluidos los que todavía no existen — se verificó también que sigue andando en el
+  tema estándar. De paso salió que Tailwind v4 no genera utilidades `ring-{color}` para
+  colores del `@theme` en este proyecto (ninguna combinación de `ring-cartero-x` ni
+  `ring-[#hex]` compiló a una regla real); se usó la sintaxis de propiedad arbitraria
+  (`[box-shadow:...]`) en su lugar.
+
+  Cada paleta se verificó con la misma fórmula de contraste de WCAG que el punto #30, no
+  "invertir los colores" a ojo — más de una docena de combinaciones de casillas/textos
+  probadas antes de encontrar valores que pasaran los pares reales (texto sobre tarjeta,
+  botón con texto blanco encima, coordenada sobre cada casilla, pieza sobre cada casilla).
+  Verificado a mano en los 5 niveles, en los 4 anchos ya usados para el resto de la app, y
+  la persistencia entre recargas.
+
+### Temas pendientes: verde, rosa/violeta, azul
+
+Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol), 🦄 rosa y
+violeta (unicornio), 🌀 o 💧 azul y celeste (espiral/agua). El mecanismo ya está armado
+(#32): sumar cada uno es diseñar una paleta nueva completa y verificarla con la misma
+rigurosidad — no hay atajo técnico que lo abarate, la mayor parte del trabajo de #32 fue
+justamente ese diseño verificado, no el mecanismo en sí. Quedan afuera del alcance actual
+a propósito, para no demorar los dos primeros — se van a sumar de a uno.
+
 ---
 
 ## P1 — Cierra el círculo de la correspondencia

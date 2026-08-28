@@ -79,6 +79,29 @@ app 100% estática, se puede publicar en cualquier hosting de archivos.
 `#E8A33D`, coral `#E0574C` para errores, capturas y jaque. Tipografías Baloo 2 (títulos y
 botones, redondeada para lectura infantil), Nunito (cuerpo) y Caveat (solo la carta).
 
+### Temas de color
+
+Selector de tema (un emoji por tema, junto al encabezado): hoy **Estándar** (♟️) y
+**Oscuro** (🌙). Se guarda solo y se aplica de nuevo al volver a abrir la app.
+
+Técnicamente, cada color de `theme.js` no es un valor fijo sino una variable CSS
+(`var(--color-cartero-x)`, definida en `index.css`); cambiar de tema sólo cambia qué
+paleta de esas variables está activa (según el atributo `data-theme` de `<html>`), sin
+tocar ningún componente. Sumar un tema nuevo (verde, rosa/violeta, azul, los que están
+pensados como próximo paso) es agregar un bloque `[data-theme="nombre"] { ... }` en
+`index.css` y una entrada en `THEMES` — nada más.
+
+El tablero es la excepción a "todo cambia con el tema": casilla clara y oscura se
+mantienen en un rango de luminosidad parecido al del tema estándar (sólo cambia el matiz)
+porque las piezas dependen de esa distancia de brillo para leerse — un tablero que se
+oscurece del todo deja una pieza negra invisible contra una casilla oscura. Por el mismo
+motivo, el color de las piezas (negras/blancas) es fijo: es identidad de la pieza, no un
+estilo de interfaz que deba aclararse en modo oscuro.
+
+Cada paleta nueva se verifica con la misma fórmula de contraste de WCAG que se usó para
+el tema estándar (ver la tabla de "Decisiones de diseño" y el punto #30 del backlog) —
+no alcanza con "invertir los colores".
+
 ## Limitaciones conocidas
 
 Son deliberadas para esta primera versión, no bugs:
@@ -111,6 +134,7 @@ src/
   content/tips.js           Los seis consejos del nivel 5
   components/Board.jsx      El tablero: Board y Square
   components/LevelTab.jsx   Botón de navegación entre niveles
+  components/ThemePicker.jsx Selector de tema (Estándar/Oscuro, ver arriba)
   levels/Level1.jsx ... 4   Un archivo por nivel jugable
   levels/LevelTip.jsx       Nivel 5 (consejos)
   *.test.js                 Tests — se corren con `npm test`
