@@ -167,6 +167,57 @@ lugar, no se renumera el resto.
 
 ---
 
+## P0.5 — Pulido antes de lanzar
+
+Auditoría pedida por Pablo (2026-08-28) para revisar mobile/responsive, consistencia
+visual, estados raros y metadata para compartir, antes de considerar la app "lanzada".
+Hecha mirando la app real en el navegador (320px, 375px, 768px y 1280px de ancho) más
+lectura de código — no son bugs que rompan nada hoy, son candidatas a discutir, como el
+resto de este archivo.
+
+### 25. Zona muerta en tablet: "Escribí tu carta" no aprovecha 768–1023px
+
+El layout de dos columnas (tablero a la izquierda, carta a la derecha) recién aparece en
+`lg:` (1024px). Entre 768 y 1023px —el ancho de un iPad en vertical, un tamaño de pantalla
+bien probable para esta app— todo queda apilado en una sola columna angosta y centrada,
+igual que en el celular, con mucho scroll vertical para llegar a la carta. Bajar ese
+breakpoint a `md:` (768px) probablemente alcance; hay que probarlo con el tablero real
+para que no quede apretado.
+
+### 26. Controles táctiles chicos para dedos de 6 años
+
+Medido en el navegador: los puntitos del carrusel de Consejos son de **10×10px**, y los
+botones de girar tablero / descargar imagen (nivel "Escribí tu carta") son de **24×24px**.
+El mínimo recomendado por las pautas de accesibilidad táctil (WCAG 2.5.5) es 44×44px; el
+mínimo aceptable (2.5.8) es 24×24px — los puntitos del carrusel están bastante por debajo
+incluso de eso. Para una app pensada para una nena de 6 años tocando una tablet, vale la
+pena agrandar ambos, no sólo por cumplir una norma.
+
+### 27. Nombre largo se corta a mitad de palabra, sin avisar
+
+`LARGO_MAXIMO_NOMBRE` (`carta.js`) es 24 caracteres, y se aplica en cada tecla
+(`recortarMientrasEscribe`) sin `maxLength` en el `<input>` ni ningún indicio visual de
+que se llegó al límite. Un nombre como "Maria Guadalupe Esperanza..." queda escrito
+"Maria Guadalupe Esperanz" — sin la "a" final, sin "…", nada que explique por qué dejó de
+aceptar letras. El límite en sí tiene sentido (evita que un nombre gigante rompa el
+layout de la carta); lo que falta es que se note que hay un límite. Alcanzaría con
+agregar `maxLength={24}` al input (da el corte + el comportamiento nativo del navegador
+al llegar al tope) y, opcionalmente, un contador chico tipo "24/24".
+
+### 28. Sin metadata para cuando el link se comparte
+
+`index.html` tiene `<title>`, `meta description` y favicon, pero nada de Open Graph
+(`og:title`, `og:description`, `og:image`) ni Twitter Card. Como el uso real de esta app
+es "mandale el link a quien juega con vos" —y eso hoy por hoy pasa por WhatsApp, según el
+propio README— compartir el link hoy muestra una vista previa pelada (o nada) en vez de
+una tarjeta con el título y una imagen del tablero. Sumar eso, más un `apple-touch-icon` y
+`theme-color`, es barato y es también un primer paso hacia la idea de PWA que ya está en P5.
+
+Nada de esto es urgente en el sentido de "está roto"; es la clase de cosas que se nota
+cuando se lo mandás a alguien de afuera por primera vez.
+
+---
+
 ## P1 — Cierra el círculo de la correspondencia
 
 ### ~~5. Nivel "Leé la carta de Paulina"~~ — bajado de prioridad (2026-08-24)
