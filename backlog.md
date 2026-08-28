@@ -393,6 +393,49 @@ orden del menú, para poder recorrerlas de un vistazo.
 
 ## P1 — Cierra el círculo de la correspondencia
 
+### 36. Pegar una jugada suelta (no la carta entera)
+
+Pablo lo pidió así: "en la casilla de texto de '¿recibiste una carta?' permitamos colocar
+una jugada suelta. Ejemplo e5. Que el motor interprete eso suelto como 'debo añadir a lo
+que está en el tablero, esa jugada o movida'".
+
+**Qué pasa hoy:** el cuadro "¿Te llegó una carta? Pegala acá para seguir la partida"
+(nivel 4, `Level4.jsx`) sólo entiende líneas con el formato completo `1. e4 e5` — eso lo
+define `extraerJugadas` en `carta.js`, que descarta cualquier línea sin un número seguido
+de punto al principio. Y aunque lo entendiera, `subirJugadas` → `reconstruirPartida`
+siempre arranca de cero (`createInitialBoard()`) y reconstruye la partida entera desde el
+principio con lo que haya en el texto — no la suma a lo que ya está jugado en el tablero.
+Hoy pegar sólo "e5" no hace nada útil: `extraerJugadas` no encuentra ninguna jugada con
+ese formato y aparece "No encontré ninguna jugada en ese texto."
+
+**Qué se pide:** el caso real de uso es más chico que "pegar la carta entera" (#6, ya
+hecho) — es "me contestaron con una sola jugada, sumala a lo que ya tengo". Habría que
+poder pegar algo suelto como `e5`, `Cf3` o `Axg5` y que se interprete como LA PRÓXIMA
+jugada de quien le toca mover ahora (`partida.turn`), aplicada sobre el tablero actual, no
+sobre uno vacío.
+
+**Cómo se podría resolver** (no es la única forma, para cuando se encare): el motor ya
+tiene todas las piezas sueltas que hacen falta, no hay que inventar nada nuevo, sólo
+conectarlas distinto:
+
+- `parseMove` + `resolveMove` (`chess/notation.js`) ya resuelven una notación suelta
+  contra un tablero y un turno dados — son justo lo que arma `handleClick` para una jugada
+  hecha con el mouse, y lo que usa `reconstruirPartida` jugada por jugada. Se podrían
+  llamar con el `board`/`turn`/`castling`/`enPassant` de la partida EN CURSO en vez de con
+  un tablero vacío.
+- Con eso resuelto, aplicar la jugada es lo mismo que ya hace `handleClick` al mover una
+  pieza: `applyMove` + `notarJugada` + `agregarJugada`, guardando el `previous` para poder
+  deshacer.
+- Falta decidir cómo distinguir este caso del de "pegar la carta entera" (#6) en el mismo
+  cuadro de texto: ¿un texto de una sola línea sin número se trata como jugada suelta, y
+  todo lo demás sigue el camino de #6 como hasta ahora? Probablemente sí, pero conviene
+  pensarlo con casos reales (¿y si pegan "5. e5" queriendo decir "la jugada 5 son negras
+  jugando e5", no la carta completa desde el principio?).
+- El error a mostrar también cambia de sentido: hoy dice "no pude entender la jugada X (en
+  la carta reconstruida)"; para una jugada suelta tendría que poder decir algo más preciso
+  como "esa jugada no se puede hacer ahora" (pieza equivocada, no es el turno de esa
+  pieza, movimiento ilegal) en vez de sólo "no la entendí".
+
 ### ~~5. Nivel "Leé la carta de Paulina"~~ — bajado de prioridad (2026-08-24)
 
 La idea original era un nivel de lectura paso a paso ("pegar el texto de la carta y que
