@@ -354,11 +354,26 @@ es un tema claro como el estándar, así que el valor base ya sirve.
 Verificado en los 5 niveles, con el punto de movimiento legal, el halo de foco de teclado
 y el estado de "revelar casilla" (dorado) de "Ubicá casillas".
 
-### Temas pendientes: rosa/violeta, azul
+### ~~34. Tema Unicornio 🦄~~
 
-Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol, hecho arriba),
-🦄 rosa y violeta (unicornio), 🌀 o 💧 azul y celeste (espiral/agua). El mecanismo ya está
-armado (#32): sumar cada uno es diseñar una paleta nueva completa y verificarla con la
+Cuarto tema (rosa y violeta), mismo mecanismo y misma verificación de contraste que
+Verde (#33) — y esta vez pasó todo a la primera, aplicando de entrada la lección de #33:
+el trazo de la pieza negra (`piece-ink-stroke`) toma directamente el color de la casilla
+clara del tema en vez de intentar primero con el relleno solo y corregir después.
+
+Único resultado esperado, no un bug: el borde dorado de "casilla seleccionada" contra la
+casilla clara da 1.72:1 (no llega a 3:1) — pasa exactamente lo mismo en Estándar (1.84:1)
+y en Oscuro (1.35:1), así que no es una regresión de este tema, es una limitación ya
+aceptada del diseño (el dorado es decorativo, la selección también se nota por el resto
+del contexto — no es el único medio para transmitir ese estado).
+
+Verificado en los 5 niveles, el punto de movimiento legal y el halo de foco de teclado.
+
+### Temas pendientes: azul
+
+Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol, #33), 🦄 rosa y
+violeta (unicornio, #34), 🌀 o 💧 azul y celeste (espiral/agua). El mecanismo ya está
+armado (#32): sumar el que queda es diseñar una paleta nueva completa y verificarla con la
 misma rigurosidad — no hay atajo técnico que lo abarate, la mayor parte del trabajo de
 cada tema es justamente ese diseño verificado, no el mecanismo en sí.
 

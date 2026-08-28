@@ -82,15 +82,15 @@ botones, redondeada para lectura infantil), Nunito (cuerpo) y Caveat (solo la ca
 ### Temas de color
 
 Selector de tema (un emoji por tema, junto al encabezado): hoy **Estándar** (♟️),
-**Oscuro** (🌙) y **Verde** (🌳). Se guarda solo y se aplica de nuevo al volver a abrir
-la app.
+**Oscuro** (🌙), **Verde** (🌳) y **Unicornio** (🦄). Se guarda solo y se aplica de
+nuevo al volver a abrir la app.
 
 Técnicamente, cada color de `theme.js` no es un valor fijo sino una variable CSS
 (`var(--color-cartero-x)`, definida en `index.css`); cambiar de tema sólo cambia qué
 paleta de esas variables está activa (según el atributo `data-theme` de `<html>`), sin
-tocar ningún componente. Sumar un tema nuevo (rosa/violeta, azul, los que quedan
-pendientes) es agregar un bloque `[data-theme="nombre"] { ... }` en `index.css` y una
-entrada en `THEMES` — nada más.
+tocar ningún componente. Sumar un tema nuevo (azul, el que queda pendiente) es agregar un
+bloque `[data-theme="nombre"] { ... }` en `index.css` y una entrada en `THEMES` — nada
+más.
 
 El tablero es la excepción a "todo cambia con el tema": casilla clara y oscura se
 mantienen en un rango de luminosidad parecido al del tema estándar (sólo cambia el matiz)

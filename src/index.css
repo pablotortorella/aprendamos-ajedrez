@@ -140,6 +140,32 @@
      necesidad. */
 }
 
+/* ============ Tema rosa y violeta ("unicornio") ============ */
+[data-theme="unicornio"] {
+  --color-cartero-paper: #faf0f7;
+  --color-cartero-paper-card: #fffafd;
+  --color-cartero-ink: #3a1f3d;
+  --color-cartero-ink-soft: #6e5175;
+  --color-cartero-teal: #9c3fa0;
+  --color-cartero-teal-dark: #6a2b70;
+  --color-cartero-square-light: #f3e0ee;
+  --color-cartero-square-dark: #6b3f8f;
+  --color-cartero-gold: #e8a33d;
+  --color-cartero-gold-soft: #f6d8a0;
+  --color-cartero-coral: #e0574c;
+  --color-cartero-gold-dark: #8b6225;
+  --color-cartero-coral-dark: #b3463d;
+  --color-cartero-coral-strong: #b3463d;
+  --color-cartero-piece-ink: #141726;
+  /* Mismo motivo que en el tema Verde (#33): el relleno solo de la pieza
+     negra no llega a 3:1 contra esta casilla oscura (violeta bastante
+     saturado), así que el trazo toma el color de la casilla clara propia
+     del tema en vez de coincidir con el relleno. */
+  --color-cartero-piece-ink-stroke: #f3e0ee;
+  --color-cartero-piece-white-stroke: #164e53;
+  /* content-bg no se pisa: tema claro, el valor base ya sirve (ver Verde). */
+}
+
 html,
 body,
 #root {
