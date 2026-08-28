@@ -382,7 +382,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
               <div className="flex items-center gap-2">
                 <button
                   onClick={empezarDeNuevo}
-                  style={{ fontFamily: FONTS.baloo, background: COLORS.coralDark, color: "#fff" }}
+                  style={{ fontFamily: FONTS.baloo, background: COLORS.coralStrong, color: "#fff" }}
                   className="px-3 py-1.5 rounded-full text-sm font-bold shadow"
                 >
                   Sí, borrar
@@ -525,7 +525,7 @@ export default function Level4({ nombres, onCambiarNombres }) {
               </span>
               <button
                 onClick={subirJugadas}
-                style={{ fontFamily: FONTS.baloo, background: COLORS.coralDark, color: "#fff" }}
+                style={{ fontFamily: FONTS.baloo, background: COLORS.coralStrong, color: "#fff" }}
                 className="px-3 py-1 rounded-full text-xs font-bold shadow"
               >
                 Sí, reemplazar

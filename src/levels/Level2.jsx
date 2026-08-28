@@ -35,7 +35,7 @@ export default function Level2({ piezaInicial = null, onVerComoSeMueve }) {
               <p style={{ fontFamily: FONTS.nunito, color: COLORS.inkSoft }} className="text-xs mt-1">
                 {info.desc}
               </p>
-              <span style={{ fontFamily: FONTS.nunito, color: COLORS.teal }} className="text-[10px] mt-2 font-bold">
+              <span style={{ fontFamily: FONTS.nunito, color: COLORS.tealDark }} className="text-[10px] mt-2 font-bold">
                 {isOpen ? "Tocá para cerrar ▲" : "Tocá para saber más ▼"}
               </span>
             </button>
@@ -62,7 +62,7 @@ export default function Level2({ piezaInicial = null, onVerComoSeMueve }) {
                 </p>
                 <button
                   onClick={() => onVerComoSeMueve(type)}
-                  style={{ fontFamily: FONTS.baloo, color: COLORS.teal }}
+                  style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }}
                   className="text-xs font-bold text-left underline"
                 >
                   🧭 Ver cómo se mueve {pieceArticleName(type)} →

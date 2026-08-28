@@ -7,7 +7,7 @@ export default function LevelTab({ active, onClick, label, emoji }) {
       style={{
         fontFamily: FONTS.baloo,
         background: active ? COLORS.teal : COLORS.paperCard,
-        color: active ? "#FFFFFF" : COLORS.teal,
+        color: active ? "#FFFFFF" : COLORS.tealDark,
         border: `2px solid ${COLORS.teal}`,
       }}
       className="px-3 py-2 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-colors"

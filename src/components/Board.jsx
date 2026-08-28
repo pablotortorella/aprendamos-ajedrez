@@ -39,9 +39,10 @@ function Square({
       }}
       // El outline de "seleccionada" (arriba) va inline y gana por especificidad,
       // así que el foco de teclado necesita !important para no quedar tapado.
-      // Distinto color que "seleccionada" (gold) y que jaque/captura (coral),
-      // para no confundir "estoy parado acá" con esos otros estados.
-      className="aspect-square flex items-center justify-center select-none focus-visible:outline-4! focus-visible:outline-cartero-focus!"
+      // Es un halo de dos aros (blanco + oscuro) y no un solo color: ver el
+      // comentario largo en index.css sobre por qué ningún color único
+      // contrasta contra las dos casillas del tablero en todos los temas.
+      className="aspect-square flex items-center justify-center select-none focus-visible:[box-shadow:0_0_0_2px_white,0_0_0_6px_var(--color-cartero-piece-ink)]!"
     >
       {children}
       {highlight && !capture && (
@@ -68,13 +69,12 @@ function Square({
         </span>
       )}
       {coordLabel && (
-        // Sin opacity: mezclado con el color de fondo real, bajaba el contraste
-        // por debajo de lo legible (goldSoft quedaba en 3.26:1 sobre la casilla
-        // oscura). lightSquare como texto en la oscura, en vez de goldSoft: a
-        // pleno contraste goldSoft todavía no llegaba a 4.5:1 (quedaba en
-        // 4.19); lightSquare sí (4.91), reutilizando el mismo cream del tablero.
+        // Cada casilla usa el color de la OTRA como texto: simétrico, y pasa
+        // WCAG en los dos temas sin necesitar un color aparte sólo para esto
+        // (ver #30 del backlog — antes era goldSoft con opacity, que no
+        // llegaba a 4.5:1 ni a pleno brillo).
         <span
-          style={{ color: dark ? COLORS.lightSquare : COLORS.teal, fontFamily: FONTS.nunito }}
+          style={{ color: dark ? COLORS.lightSquare : COLORS.darkSquare, fontFamily: FONTS.nunito }}
           className="absolute bottom-0.5 right-1 text-[9px] sm:text-xs font-bold"
         >
           {coordLabel}
@@ -135,13 +135,16 @@ export default function Board({
               <span
                 className={pieceSize}
                 style={
+                  // El glyph "blanco" es sólo contorno, sin relleno propio (ver
+                  // pieceGlyph): las dos piezas necesitan relleno + trazo
+                  // explícitos para leerse solas sin depender de qué casilla
+                  // les toque. Colores de identidad de la pieza (blanca/negra),
+                  // no de UI: no cambian con el tema — ver index.css.
                   piece && isWhite(piece)
-                    ? // El glyph blanco es sólo contorno: sobre la casilla clara
-                      // (o cualquier fondo claro) casi no se distingue. Se rellena
-                      // de blanco y se le agrega un trazo oscuro, así se lee sola
-                      // incluso si se mira sin el resto del tablero alrededor.
-                      { lineHeight: 1, color: "#FFFFFF", WebkitTextStroke: `1.5px ${COLORS.tealDark}` }
-                    : { lineHeight: 1 }
+                    ? { lineHeight: 1, color: "#FFFFFF", WebkitTextStroke: `1.5px ${COLORS.pieceWhiteStroke}` }
+                    : piece
+                      ? { lineHeight: 1, color: COLORS.pieceInk, WebkitTextStroke: `1.5px ${COLORS.pieceInkStroke}` }
+                      : { lineHeight: 1 }
                 }
               >
                 {pieceGlyph(piece)}

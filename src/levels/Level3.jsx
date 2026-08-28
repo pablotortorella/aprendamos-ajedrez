@@ -65,7 +65,7 @@ export default function Level3({ piezaInicial = null, onVerMasSobreLaPieza }) {
       </div>
       <button
         onClick={() => onVerMasSobreLaPieza(selected)}
-        style={{ fontFamily: FONTS.baloo, color: COLORS.teal }}
+        style={{ fontFamily: FONTS.baloo, color: COLORS.tealDark }}
         className="text-xs font-bold underline"
       >
         📖 Conocé más sobre {pieceArticleName(selected)} →
