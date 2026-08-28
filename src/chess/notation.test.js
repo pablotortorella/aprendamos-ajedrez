@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
+import { initialCastlingRights } from "./engine.js";
 import { moveNotation, parseMove, resolveMove } from "./notation.js";
 import { at, boardFrom } from "./engine.test.js";
 
 /** Escribe la jugada de una casilla a otra: escribir(board, "b1", "d2"). */
 const escribir = (board, desde, hasta, opciones) =>
   moveNotation(board, at(desde).row, at(desde).col, at(hasta).row, at(hasta).col, opciones);
+
+/** Arma el { fromRow, fromCol, toRow, toCol } esperado a partir de dos casillas. */
+const desdeHasta = (desde, hasta) => ({
+  fromRow: at(desde).row,
+  fromCol: at(desde).col,
+  toRow: at(hasta).row,
+  toCol: at(hasta).col,
+});
 
 describe("jugadas simples", () => {
   it("el peón se escribe sólo con la casilla de destino", () => {
@@ -120,6 +129,19 @@ describe("bordes", () => {
   });
 });
 
+describe("enroque (notación)", () => {
+  it("el rey moviéndose 2 casillas se escribe O-O o O-O-O, no como una jugada de rey normal", () => {
+    expect(escribir(boardFrom({ e1: "K" }), "e1", "g1")).toBe("O-O");
+    expect(escribir(boardFrom({ e1: "K" }), "e1", "c1")).toBe("O-O-O");
+    expect(escribir(boardFrom({ e8: "k" }), "e8", "g8")).toBe("O-O");
+  });
+
+  it("lleva el sufijo de jaque igual que cualquier otra jugada", () => {
+    expect(escribir(boardFrom({ e1: "K" }), "e1", "g1", { check: true })).toBe("O-O+");
+    expect(escribir(boardFrom({ e1: "K" }), "e1", "c1", { checkmate: true })).toBe("O-O-O#");
+  });
+});
+
 describe("parseMove", () => {
   it("un peón es sólo la casilla de destino", () => {
     expect(parseMove("e4")).toEqual({ type: "P", disambig: "", capture: false, dest: "e4", promoted: false });
@@ -152,21 +174,19 @@ describe("parseMove", () => {
   it("un token sin forma de jugada devuelve null en vez de romper", () => {
     expect(parseMove("")).toBeNull();
     expect(parseMove("hola")).toBeNull();
-    expect(parseMove("O-O")).toBeNull(); // enroque: no soportado todavía
     expect(parseMove(undefined)).toBeNull();
+  });
+
+  it("reconoce el enroque, corto y largo, con o sin la O mayúscula", () => {
+    expect(parseMove("O-O")).toEqual({ type: "K", castle: "K" });
+    expect(parseMove("O-O-O")).toEqual({ type: "K", castle: "Q" });
+    expect(parseMove("0-0")).toEqual({ type: "K", castle: "K" });
+    expect(parseMove("0-0-0")).toEqual({ type: "K", castle: "Q" });
   });
 });
 
 describe("resolveMove", () => {
   const resolver = (board, turn, token) => resolveMove(board, turn, parseMove(token));
-
-  /** Arma el { fromRow, fromCol, toRow, toCol } esperado a partir de dos casillas. */
-  const desdeHasta = (desde, hasta) => ({
-    fromRow: at(desde).row,
-    fromCol: at(desde).col,
-    toRow: at(hasta).row,
-    toCol: at(hasta).col,
-  });
 
   it("encuentra el peón que puede avanzar", () => {
     const board = boardFrom({ e2: "P" });
@@ -204,5 +224,45 @@ describe("resolveMove", () => {
     // puede mover, aunque "Cd4" sea un salto pseudo-legal válido.
     const board = boardFrom({ e1: "K", e2: "N", e8: "r" });
     expect(resolver(board, "w", "Cd4")).toBeNull();
+  });
+});
+
+describe("resolveMove — enroque", () => {
+  it("resuelve O-O y O-O-O si el contexto trae el derecho", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R" });
+    const context = { castling: initialCastlingRights() };
+    expect(resolveMove(board, "w", parseMove("O-O"), context)).toEqual(desdeHasta("e1", "g1"));
+    expect(resolveMove(board, "w", parseMove("O-O-O"), context)).toEqual(desdeHasta("e1", "c1"));
+  });
+
+  it("sin contexto de enroque no lo resuelve, aunque el tablero lo permitiría", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R" });
+    expect(resolveMove(board, "w", parseMove("O-O"))).toBeNull();
+  });
+
+  it("no resuelve un enroque que ya perdió el derecho", () => {
+    const board = boardFrom({ e1: "K", a1: "R", h1: "R" });
+    const context = { castling: { wK: false, wQ: true, bK: true, bQ: true } };
+    expect(resolveMove(board, "w", parseMove("O-O"), context)).toBeNull();
+    expect(resolveMove(board, "w", parseMove("O-O-O"), context)).toEqual(desdeHasta("e1", "c1"));
+  });
+
+  it("resuelve el enroque de las negras del mismo modo", () => {
+    const board = boardFrom({ e8: "k", h8: "r" });
+    const context = { castling: initialCastlingRights() };
+    expect(resolveMove(board, "b", parseMove("O-O"), context)).toEqual(desdeHasta("e8", "g8"));
+  });
+});
+
+describe("resolveMove — captura al paso", () => {
+  it("resuelve la captura al paso escrita como una captura de peón normal", () => {
+    const board = boardFrom({ e5: "P", d5: "p" });
+    const context = { enPassant: at("d6") };
+    expect(resolveMove(board, "w", parseMove("exd6"), context)).toEqual(desdeHasta("e5", "d6"));
+  });
+
+  it("sin el objetivo en el contexto, no la resuelve", () => {
+    const board = boardFrom({ e5: "P", d5: "p" });
+    expect(resolveMove(board, "w", parseMove("exd6"))).toBeNull();
   });
 });
