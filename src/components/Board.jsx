@@ -42,7 +42,13 @@ function Square({
       // Es un halo de dos aros (blanco + oscuro) y no un solo color: ver el
       // comentario largo en index.css sobre por qué ningún color único
       // contrasta contra las dos casillas del tablero en todos los temas.
-      className="aspect-square flex items-center justify-center select-none focus-visible:[box-shadow:0_0_0_2px_white,0_0_0_6px_var(--color-cartero-piece-ink)]!"
+      //
+      // focus-visible:z-10 es necesario además del box-shadow: las casillas
+      // son hermanas en el grid con z-index "auto", así que sin esto el
+      // navegador las pinta en orden de aparición en el HTML y las casillas
+      // siguientes tapan la mayor parte del halo (sólo se veía una rayita a
+      // la izquierda, del lado de la casilla ya pintada antes).
+      className="aspect-square flex items-center justify-center select-none focus-visible:z-10 focus-visible:[box-shadow:0_0_0_2px_white,0_0_0_6px_var(--color-cartero-piece-ink)]!"
     >
       {children}
       {highlight && !capture && (

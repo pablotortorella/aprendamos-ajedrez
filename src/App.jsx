@@ -7,7 +7,7 @@ import Level3 from "./levels/Level3.jsx";
 import Level4 from "./levels/Level4.jsx";
 import LevelTip from "./levels/LevelTip.jsx";
 import { guardarNombres, guardarTema, leerNombres, leerTema } from "./storage.js";
-import { FONTS } from "./theme.js";
+import { COLORS, FONTS } from "./theme.js";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -73,7 +73,7 @@ export default function App() {
         <LevelTab active={level === 5} onClick={() => irANivel(5)} emoji="👑" label="Consejos" />
       </nav>
 
-      <main style={{ background: "rgba(255,255,255,0.5)", borderRadius: 24 }} className="max-w-3xl mx-auto p-4 sm:p-6">
+      <main style={{ background: COLORS.contentBg, borderRadius: 24 }} className="max-w-3xl mx-auto p-4 sm:p-6">
         {level === 1 && <Level2 piezaInicial={piezaObjetivo} onVerComoSeMueve={(pieza) => irANivel(2, pieza)} />}
         {level === 2 && <Level3 piezaInicial={piezaObjetivo} onVerMasSobreLaPieza={(pieza) => irANivel(1, pieza)} />}
         {level === 3 && <Level1 />}

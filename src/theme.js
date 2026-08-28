@@ -15,6 +15,7 @@
 export const COLORS = {
   paper: "var(--color-cartero-paper)",
   paperCard: "var(--color-cartero-paper-card)",
+  contentBg: "var(--color-cartero-content-bg)",
   ink: "var(--color-cartero-ink)",
   inkSoft: "var(--color-cartero-ink-soft)",
   teal: "var(--color-cartero-teal)",

@@ -54,6 +54,11 @@
   --color-cartero-piece-ink: #141726;
   --color-cartero-piece-ink-stroke: #141726;
   --color-cartero-piece-white-stroke: #164e53;
+  /* Fondo de la tarjeta grande que envuelve cada nivel (App.jsx <main>): un
+     blanco translúcido para "levantarla" un poco sobre el fondo de la
+     página, no un color propio. Por eso es un token aparte de paper-card
+     (que sí es opaco, para tarjetas internas como las piezas de nivel 2). */
+  --color-cartero-content-bg: rgba(255, 255, 255, 0.5);
 }
 
 /* El anillo de foco de teclado (Board.jsx) no usa una sola variable de color:
@@ -97,6 +102,12 @@
   --color-cartero-piece-ink: #0a0c14;
   --color-cartero-piece-ink-stroke: #c7cce3;
   --color-cartero-piece-white-stroke: #141726;
+  /* rgba(255,255,255,0.5) sin ajustar acá daba un gris plano feo: blanco al
+     50% mezclado con una página casi negra promedia a gris medio, que no
+     tiene nada que ver con la paleta índigo del resto del tema oscuro. Acá
+     el blanco es mucho más sutil (apenas "levanta" la tarjeta un toque
+     sobre la página) en vez de promediar a la mitad. */
+  --color-cartero-content-bg: rgba(255, 255, 255, 0.06);
 }
 
 html,

@@ -308,6 +308,28 @@ accesibilidad de #15 sigue sólido bajo un flujo de juego real.)*
   cambien con `[data-theme="dark"]`. De paso quedó más lindo en los dos temas, no sólo
   arreglado en el oscuro.
 
+  **Dos ajustes más (mismo día), probando en el navegador real:**
+
+  1. El anillo de foco de teclado (halo blanco + oscuro, ver más arriba) se veía como una
+     rayita fina de un solo lado en vez de un aro completo — Pablo lo notó tabulando en el
+     nivel 4. No era cosmético: las casillas son hermanas en el grid con `z-index: auto`,
+     así que el navegador las pinta en el orden en que aparecen en el HTML, y las casillas
+     siguientes tapaban la mayor parte del halo de la enfocada (sólo quedaba visible el
+     lado que ya se había pintado antes). Se arregló con `focus-visible:z-10`, que sube la
+     casilla enfocada por encima de sus vecinas sólo mientras tiene el foco. Verificado con
+     capturas de Playwright, tabulando de verdad (no con `.focus()` por script, que no
+     siempre dispara `:focus-visible`), en los dos temas.
+  2. La tarjeta grande que envuelve cada nivel (`<main>` en App.jsx) tenía un
+     `rgba(255,255,255,0.5)` fijo, pensado para el tema estándar (blanco al 50% sobre un
+     fondo de página clara). En el tema oscuro, blanco al 50% mezclado con una página casi
+     negra promedia a gris medio plano — sin relación con el resto de la paleta índigo, y
+     es justo lo que a Pablo se le hizo raro en "Ubicá casillas". Se separó en un token de
+     tema (`--color-cartero-content-bg`), con el mismo valor de siempre para el tema
+     estándar y uno mucho más sutil para el oscuro (blanco al 6%, no al 50%), para que la
+     tarjeta se sienta "un escalón arriba" de la página en vez de saltar a gris. Contraste
+     de los textos de adentro contra el nuevo fondo verificado con la fórmula de WCAG
+     (9.96:1, 7.69:1 y 8.65:1 según el texto — de sobra para AA).
+
 ### Temas pendientes: verde, rosa/violeta, azul
 
 Pablo pidió tres temas más, cada uno con su propio ícono — 🌳 verde (árbol), 🦄 rosa y
